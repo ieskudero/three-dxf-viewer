@@ -7,6 +7,7 @@
     "scripts": {
         "dev": "webpack-dev-server --config webpack.dev.config.js",
         "build": "webpack",
+        "page": "webpack --config webpack.page.config.js",
         "docs": "node jsdoc",
         "lint": "eslint --fix --ext .js,.jsx ."
     },
@@ -29,6 +30,7 @@
         "html-webpack-plugin": "5.5.0",
         "replace-in-file": "6.3.5",
         "terser-webpack-plugin": "5.3.6",
+		"copy-webpack-plugin": "11.0.0",
         "case-sensitive-paths-webpack-plugin": "^2.4.0",
         "webpack": "5.75.0",
         "webpack-bundle-analyzer": "4.7.0",
