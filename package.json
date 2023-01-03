@@ -1,0 +1,42 @@
+{
+    "name": "three-dxf-viewer",
+    "version": "1.0.0",
+    "description": "DXF viewer using ThreeJS",
+    "main": "dxfViewer.js",
+    "scripts": {
+        "dev": "webpack-dev-server --config webpack.dev.config.js",
+        "build": "webpack",
+        "docs": "node jsdoc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:ieskudero/three-dxf-viewer.git"
+    },
+    "keywords": ["dxf", "three", "viewer"],
+    "author": "Ibon Eskudero",
+    "license": "MIT",
+    "homepage": "",
+    "devDependencies": {
+        "buffer": "6.0.3",
+        "crypto-browserify": "3.12.0",
+        "stream-browserify": "3.0.0",
+        "css-loader": "6.7.3",
+        "css-minimizer-webpack-plugin": "^4.2.2",
+        "mini-css-extract-plugin": "2.7.2",
+        "html-loader": "4.2.0",
+        "html-webpack-plugin": "5.5.0",
+        "replace-in-file": "6.3.5",
+        "terser-webpack-plugin": "5.3.6",
+        "case-sensitive-paths-webpack-plugin": "^2.4.0",
+        "webpack": "5.75.0",
+        "webpack-bundle-analyzer": "4.7.0",
+        "webpack-cli": "5.0.1",
+        "webpack-dev-server": "4.11.1",
+        "worker-loader": "3.0.8",
+        "jsdoc-to-markdown": "8.0.0"
+    },
+    "dependencies": {
+        "dxf": "5.0.0",
+        "three": "0.148.0"
+    }
+}
