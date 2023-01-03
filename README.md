@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # DXF Viewer
 
 DXF viewer made using [dxf parser](https://github.com/skymakerolof/dxf) and [threejs](https://github.com/mrdoob/three.js/). It generates a threejs object that can be used in any scene. It also has some utility classes such as a merger and a snap helper.
@@ -49,7 +45,7 @@ Merger class can merge all entities to optimize drawing big DXF files.
 ```js
 import { Merger } from 'three-dxf-viewer/utils/Merger';
 
-let dxf = await new DXFViewer().getFrompath( dxfFilePath, fontPath );
+let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
 
 const mergedObject = new Merger().merge( dxf );
 
@@ -65,7 +61,7 @@ Snaps classes can store all the vertices in an efficient way to in the scene.
 ```js
 import { Merger } from 'three-dxf-viewer/utils/Merger';
 
-let dxf = await new DXFViewer().getFrompath( dxfFilePath, fontPath );
+let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
 
 let snaps = new Snapshelper( dxf, renderer, scene, camera, controls );
 
