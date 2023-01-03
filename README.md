@@ -14,7 +14,7 @@ npm install three-dxf-viewer
 
 ## Example
 
-To use it just initialize the main class and launch `getFromFile` or `getFrompath` methods.
+To use it just initialize the main class and launch `getFromFile` or `getFromPath` methods.
 
 ```js
 
