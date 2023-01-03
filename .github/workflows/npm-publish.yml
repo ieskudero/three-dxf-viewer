@@ -20,6 +20,8 @@ jobs:
         run: npm install
       - name: Run ESLint
         run: npm run lint
+      - name: Run Build
+        run: npm run build
       - name: Run Publish 
         run: npm publish
         env:
