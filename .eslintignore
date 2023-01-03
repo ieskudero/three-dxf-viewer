@@ -1,5 +1,6 @@
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 dist/
+api/
 
 # Dependency directories
 node_modules/
