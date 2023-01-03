@@ -2,6 +2,10 @@
 
 DXF viewer made using [dxf parser](https://github.com/skymakerolof/dxf) and [threejs](https://github.com/mrdoob/three.js/). It generates a threejs object that can be used in any scene. It also has some utility classes such as a merger and a snap helper.
 
+### Try Online
+
+You can try it [here](https://ieskudero.github.io/three-dxf-viewer/)
+
 ### Installation
 
 ```shell
