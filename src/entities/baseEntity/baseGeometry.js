@@ -10,6 +10,8 @@ export class BaseGeometry extends BaseColor {
 
 	constructor() {
 		super();
+		this._xAxis = new Vector3( 1, 0, 0 );
+		this._yAxis = new Vector3( 0, 1, 0 );
 		this._zAxis = new Vector3( 0, 0, 1 );
 	}
 

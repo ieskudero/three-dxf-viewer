@@ -84,13 +84,19 @@ export class CircleEntity extends BaseEntity {
 		} else {    //ARC
 			startAngle = entity.startAngle;
 			endAngle = entity.endAngle;
+			if( entity.extrusionZ < 0 ) { 
+				let newAngles = this._rotateXY( entity.startAngle, entity.endAngle );
+				startAngle = newAngles[1];
+				endAngle = newAngles[0];
+			}
 		}
 
 		let curve = new ArcCurve(
 			0, 0,
 			entity.r,
 			startAngle,
-			endAngle );
+			endAngle
+		);
 
 		let points = curve.getPoints( 32 );
 		var geometry = new BufferGeometry().setFromPoints( points );
@@ -101,8 +107,8 @@ export class CircleEntity extends BaseEntity {
 			y: entity.center ? entity.center.y : entity.y,
 			z: entity.center ? entity.center.z : entity.z
 		};
-		geometry.translate( center.x , center.y, center.z );
-
+		geometry.translate( entity.extrusionZ < 0 ? -center.x : center.x , center.y, center.z );
+		
 		return { geometry: geometry, material: material };
 	}
 
@@ -159,6 +165,16 @@ export class CircleEntity extends BaseEntity {
 			//move to original position
 			geometry.translate( center.x, center.y, center.z );
 		}
+	}
+	
+	_rotateXY( startAngle, endAngle ) {
+		const sv = this._xAxis.clone().applyAxisAngle( this._zAxis, startAngle ) ;
+		const ev = this._xAxis.clone().applyAxisAngle( this._zAxis, endAngle );
+
+		sv.applyAxisAngle( this._yAxis, Math.PI );
+		ev.applyAxisAngle( this._yAxis, Math.PI );
+
+		return [ Math.atan2( sv.y, sv.x ), Math.atan2( ev.y, ev.x ) ];
 	}
 
 }
