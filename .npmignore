@@ -1,0 +1,25 @@
+# source code
+src
+resources
+dxfViewer.js
+jsdoc.js
+
+# compiler
+webpack.config.js
+webpack.dev.config.js
+package-lock.json
+node_modules 
+
+# tests
+test
+
+#  lint
+.eslintrc.js
+.eslintignore
+
+# IDE - VSCode
+.vscode
+
+# git
+.git
+.github
