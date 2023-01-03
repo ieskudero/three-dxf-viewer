@@ -16,6 +16,8 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
+      - name: Install Dependencies
+        run: npm install
       - name: Run ESLint
         run: npm run lint
       - name: Run Build
