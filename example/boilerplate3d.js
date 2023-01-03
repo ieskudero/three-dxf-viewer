@@ -1,4 +1,4 @@
-import { Box3, Color, LinearToneMapping, MOUSE, OrthographicCamera, Scene, sRGBEncoding, WebGLRenderer } from "three";
+import { Box3, Color, LinearToneMapping, MOUSE, OrthographicCamera, Scene, sRGBEncoding, WebGLRenderer } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 export class Boilerplate3D {
@@ -19,15 +19,15 @@ export class Boilerplate3D {
 	loadScene() {
 	
 		// dom
-		this.container = document.createElement('div');
-		document.body.appendChild(this.container);
+		this.container = document.createElement( 'div' );
+		document.body.appendChild( this.container );
 	
 		// renderer
-		this.renderer = new WebGLRenderer({
+		this.renderer = new WebGLRenderer( {
 			antialias: true
-		});
-		this.renderer.setSize(window.innerWidth, window.innerHeight);
-		this.container.appendChild(this.renderer.domElement);
+		} );
+		this.renderer.setSize( window.innerWidth, window.innerHeight );
+		this.container.appendChild( this.renderer.domElement );
 		this.renderer.outputEncoding = sRGBEncoding;
 		this.renderer.toneMapping = LinearToneMapping;
 		this.renderer.toneMappingExposure = 3;
@@ -49,15 +49,15 @@ export class Boilerplate3D {
 			LEFT: MOUSE.PAN,
 			MIDDLE: MOUSE.DOLLY,
 			RIGHT: MOUSE.PAN
-		}
+		};
 		this.controls.update();
 	
 		//resize
-		window.addEventListener('resize', () => {
+		window.addEventListener( 'resize', () => {
 			this.camera.aspect = window.innerWidth / window.innerHeight;
 			this.camera.updateProjectionMatrix();
-			this.renderer.setSize(window.innerWidth, window.innerHeight);
-		}, false);
+			this.renderer.setSize( window.innerWidth, window.innerHeight );
+		}, false );
 	}
 
 	addDXF( dxf ) {
@@ -85,12 +85,12 @@ export class Boilerplate3D {
 	}
 
 	clear() {
-		while( this.scene.children.length > 0) { this.scene.remove( this.scene.children[0] ); }
+		while( this.scene.children.length > 0 ) { this.scene.remove( this.scene.children[0] ); }
 	}
 	
 	animate() {
 		requestAnimationFrame( () => { this.animate(); } );
 		this.controls.update();
 		this.renderer.render( this.scene, this.camera );
-	};
+	}
 }

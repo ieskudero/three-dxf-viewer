@@ -1,27 +1,27 @@
 
- var path = require('path');
- const TerserPlugin = require('terser-webpack-plugin');
- const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
+var path = require( 'path' );
+const TerserPlugin = require( 'terser-webpack-plugin' );
+const CaseSensitivePathsPlugin = require( 'case-sensitive-paths-webpack-plugin' );
 
-module.exports = (env) => {
+module.exports = ( env ) => {
 
 	return {
 		entry: {
 			main: './dxfViewer.js',
 		},
 		output: {
-			path: path.resolve(__dirname, 'build'),
+			path: path.resolve( __dirname, 'build' ),
 			filename: '[name].js',
 			library: {
 				name: 'library',	//CONFICONFI also uses library, so change accordingly
-				type: "assign-properties"
+				type: 'assign-properties'
 			}
 		},
 		resolve: {
 			fallback: {
-				crypto: require.resolve('crypto-browserify'),
-				stream: require.resolve('stream-browserify'),
-				buffer: require.resolve('buffer')
+				crypto: require.resolve( 'crypto-browserify' ),
+				stream: require.resolve( 'stream-browserify' ),
+				buffer: require.resolve( 'buffer' )
 			}
 		},
 		target: 'web',
@@ -50,7 +50,7 @@ module.exports = (env) => {
 		optimization: {
 			minimize: true,
 			minimizer: [
-				new TerserPlugin({
+				new TerserPlugin( {
 					terserOptions: {
 						output: {
 							comments: /@license/i
@@ -59,7 +59,7 @@ module.exports = (env) => {
 					},
 					extractComments: true,
 					parallel: true
-				})
+				} )
 			]
 			,
 			runtimeChunk: false

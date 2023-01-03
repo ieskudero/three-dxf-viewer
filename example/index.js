@@ -8,10 +8,10 @@ let font = 'fonts/helvetiker_regular.typeface.json';
 let snaps;
 
 //attach load file event listener
-const fileInput = document.getElementById('file');
-fileInput.addEventListener('change', loadFile );
+const fileInput = document.getElementById( 'file' );
+fileInput.addEventListener( 'change', loadFile );
 
-const loading = document.getElementById('loading');
+const loading = document.getElementById( 'loading' );
 
 async function loadFile( event ) {
 	var file = event.target.files[0];

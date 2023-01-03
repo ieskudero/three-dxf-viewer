@@ -6,7 +6,8 @@
     "scripts": {
         "dev": "webpack-dev-server --config webpack.dev.config.js",
         "build": "webpack",
-        "docs": "node jsdoc"
+        "docs": "node jsdoc",
+        "lint": "eslint --fix --ext .js,.jsx ."
     },
     "repository": {
         "type": "git",
@@ -33,7 +34,9 @@
         "webpack-cli": "5.0.1",
         "webpack-dev-server": "4.11.1",
         "worker-loader": "3.0.8",
-        "jsdoc-to-markdown": "8.0.0"
+        "jsdoc-to-markdown": "8.0.0",
+        "eslint": "8.31.0",
+        "eslint-config-recommended": "4.1.0"
     },
     "dependencies": {
         "dxf": "5.0.0",

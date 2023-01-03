@@ -1,0 +1,15 @@
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+build/
+dist/
+
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+package-lock.json
+
+# bundle config files
+webpack.config.js
+webpack.dev.config.js

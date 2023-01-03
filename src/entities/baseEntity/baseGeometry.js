@@ -1,5 +1,5 @@
-import { Vector3 } from "three";
-import { BaseColor } from "./baseColor";
+import { Vector3 } from 'three';
+import { BaseColor } from './baseColor';
 
 /**
  * @class BaseGeometry
@@ -14,18 +14,18 @@ export class BaseGeometry extends BaseColor {
 	}
 
 	_generatePointIndex( points ) {
-        let index = [];
+		let index = [];
         
-        for (let i = 1; i < points.length; i++) {
-            index.push( i - 1 );
-            index.push( i );
-        }
+		for ( let i = 1; i < points.length; i++ ) {
+			index.push( i - 1 );
+			index.push( i );
+		}
 
-        return index;
-    }
+		return index;
+	}
 
-    _fixMeshToDrawDashedLines( line ) {
-        if( line.geometry.index ) line.geometry = line.geometry.toNonIndexed();
-        line.computeLineDistances();
-    }
+	_fixMeshToDrawDashedLines( line ) {
+		if( line.geometry.index ) line.geometry = line.geometry.toNonIndexed();
+		line.computeLineDistances();
+	}
 }
