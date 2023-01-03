@@ -1,8 +1,9 @@
 {
     "name": "three-dxf-viewer",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "DXF viewer using ThreeJS",
-    "main": "dxfViewer.js",
+    "main": "./dist/dxfViewer.js",
+	"files": [ "dist" ],
     "scripts": {
         "dev": "webpack-dev-server --config webpack.dev.config.js",
         "build": "webpack",

@@ -10,7 +10,7 @@ module.exports = ( env ) => {
 			main: './dxfViewer.js',
 		},
 		output: {
-			path: path.resolve( __dirname, 'build' ),
+			path: path.resolve( __dirname, './dist' ),
 			filename: '[name].js',
 			library: {
 				name: 'library',	//CONFICONFI also uses library, so change accordingly
