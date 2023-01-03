@@ -7,7 +7,7 @@ module.exports = ( env ) => {
 
 	return {
 		entry: {
-			main: './dxfViewer.js',
+			main: './main.js',
 		},
 		output: {
 			path: path.resolve( __dirname, './dist' ),

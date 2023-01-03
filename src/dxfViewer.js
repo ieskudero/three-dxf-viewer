@@ -1,16 +1,17 @@
 import { Group, Vector3 } from 'three';
-import { TextEntity } from './src/entities/textEntity.js';
-import { DimensionEntity } from './src/entities/dimensionEntity.js';
-import { LineEntity } from './src/entities/lineEntity.js';
-import { InsertEntity } from './src/entities/insertEntity.js';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
-import { CircleEntity } from './src/entities/circleEntity';
-import { SplineEntity } from './src/entities/splineEntity';
-import { SolidEntity } from './src/entities/solidEntity';
-import { HatchEntity } from './src/entities/hatchEntity';
+
+import { TextEntity } from './entities/textEntity.js';
+import { DimensionEntity } from './entities/dimensionEntity.js';
+import { LineEntity } from './entities/lineEntity.js';
+import { InsertEntity } from './entities/insertEntity.js';
+import { CircleEntity } from './entities/circleEntity';
+import { SplineEntity } from './entities/splineEntity';
+import { SolidEntity } from './entities/solidEntity';
+import { HatchEntity } from './entities/hatchEntity';
 
 import * as Helper from 'dxf/src/Helper';
-import { Properties } from './src/entities/baseEntity/properties';
+import { Properties } from './entities/baseEntity/properties';
 
 // DXF FORMAT DOCUMENTATION
 // 
@@ -24,6 +25,7 @@ import { Properties } from './src/entities/baseEntity/properties';
 export class DXFViewer {
     
 	constructor() {
+
 		this._cache = {};
 		this.useCache = true;
 

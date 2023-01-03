@@ -6,7 +6,7 @@ import { Snaps } from './snaps.js';
  * @classdesc Auxiliar class that shows how to use snaps and get entity information from snap point
  * 
  */
-export class Snapshelper {
+export class SnapsHelper {
 	
 	/**
 	 * Constructor

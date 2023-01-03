@@ -1,7 +1,8 @@
-import { DXFViewer } from '../dxfViewer.js';
+import { DXFViewer } from '../src/dxfViewer.js';
 import { Merger } from '../src/utils/merger.js';
-import { Snapshelper } from '../src/utils/snapsHelper';
+import { SnapsHelper } from '../src/utils/snapsHelper';
 import { Boilerplate3D } from './boilerplate3d.js';
+
 
 let font = 'fonts/helvetiker_regular.typeface.json';
 
@@ -24,7 +25,7 @@ async function loadFile( event ) {
 
 		//Optional. Add control snap. Do it before merge
 		if( snaps ) snaps.clear();
-		snaps = new Snapshelper( dxf, domain.renderer, domain.scene, domain.camera, domain.controls );
+		snaps = new SnapsHelper( dxf, domain.renderer, domain.scene, domain.camera, domain.controls );
 
 		//Optional. If CAD is too big we can merge it
 		const merged = new Merger().merge( dxf );
