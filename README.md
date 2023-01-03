@@ -14,6 +14,8 @@ To use it just initialize the main class and launch `getFromFile` or `getFrompat
 
 ```js
 
+import { DXFViewer } from 'three-dxf-viewer';
+
 // Suppose we have a font in our application 
 let font = 'fonts/helvetiker_regular.typeface.json';
 
@@ -28,13 +30,6 @@ scene.addDXF( dxf );
 
 ```
 
-For a more detailed explanation, there is an example on how to use the viewer. To launch it just run:
-
-```js
-npm run dev
-```
-The application will be available on http://localhost:8080
-
 ## Utilities
 
 There are 2 utilities that can be used optionally with the viewer:
@@ -43,7 +38,7 @@ There are 2 utilities that can be used optionally with the viewer:
 Merger class can merge all entities to optimize drawing big DXF files.
 
 ```js
-import { Merger } from 'three-dxf-viewer/utils/Merger';
+import { Merger } from 'three-dxf-viewer';
 
 let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
 
@@ -53,18 +48,25 @@ scene.add( mergedObject );
 
 ```
 
-There is an example on how to use it in the main example file in /example/index.js.
 
 ### Snaps
-Snaps classes can store all the vertices in an efficient way to in the scene.
+Snaps classes can store all the vertices in an efficient way. This allows to get the closest vertex to a point in the scene. This is useful for example to snap to the nearest vertex when drawing lines.
 
 ```js
-import { Merger } from 'three-dxf-viewer/utils/Merger';
+
+import { SnapsHelper } from 'three-dxf-viewer';
 
 let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
 
-let snaps = new Snapshelper( dxf, renderer, scene, camera, controls );
+let snaps = new SnapsHelper( dxf, renderer, scene, camera, controls );
 
 ```
 
-There is an example on how to use it in the main example file in /example/index.js.
+## Development
+
+For a more detailed explanation, there is an example on how to use the viewer on the source code in /example/index.js. Download it from github an launch it with:
+
+```js
+npm run dev
+```
+The application will be available on http://localhost:8080
