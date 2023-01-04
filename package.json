@@ -17,8 +17,11 @@
     },
     "keywords": ["dxf", "three", "viewer"],
     "author": "Ibon Eskudero",
-    "license": "MIT",
-    "homepage": "",
+    "license": "MIT",  
+	"bugs": {
+		"url": "https://github.com/ieskudero/three-dxf-viewer/issues"
+	  },
+	"homepage": "https://ieskudero.github.io/three-dxf-viewer/",
     "devDependencies": {
         "buffer": "6.0.3",
         "crypto-browserify": "3.12.0",
