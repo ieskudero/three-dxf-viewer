@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-
 const fs = require( 'fs' );
 const path = require( 'path' );
 const jsdoc2md = require( 'jsdoc-to-markdown' );
@@ -15,19 +13,25 @@ class Doc {
 		/* get template data */
 		const templateData = jsdoc2md.getTemplateDataSync( { files: file } );
 
-		/* reduce templateData to an array of class names */
-		const classNames = templateData.reduce( ( classNames, identifier ) => {
-			if ( identifier.kind === 'class' ) classNames.push( identifier.name );
-			return classNames;
-		}, [] );
+		const jsdoc = ( type ) => {
 
-		/* create a documentation file for each class */
-		for ( const className of classNames ) {
-			const template = `{{#class name="${className}"}}{{>docs}}{{/class}}`;
-			console.log( `rendering ${className}, template: ${template}` );
-			const output = jsdoc2md.renderSync( { data: templateData, template: template } );
-			fs.writeFileSync( path.resolve( folder, `${className}.md` ), output );
-		}
+			/* reduce templateData to an array of class names */
+			const names = templateData.reduce( ( names, identifier ) => {
+				if ( identifier.kind === type ) names.push( identifier.name );
+				return names;
+			}, [] );
+
+			/* create a documentation file for each module */
+			for ( const name of names ) {
+				const template = `{{#${type} name="${name}"}}{{>docs}}{{/${type}}}`;
+				console.log( `rendering ${name}, template: ${template}` );
+				const output = jsdoc2md.renderSync( { data: templateData, template: template } );
+				fs.writeFileSync( path.resolve( folder, `${name}.md` ), output );
+			}
+		};
+
+		jsdoc( 'module' );
+		jsdoc( 'class' );
 	}
 
 	async documentFiles( inFolder, outFolder, recursive = false ) {
@@ -49,7 +53,7 @@ const outputDir = __dirname + '/api';
 let doc = new Doc();
 
 //create main file documentation
-doc.documentFile ( outputDir, __dirname + '/dxfViewer.js' );
+doc.documentFile ( outputDir, __dirname + '/main.js' );
 
 ( async () => {
 	await doc.documentFiles( __dirname + '/src', outputDir, true );
