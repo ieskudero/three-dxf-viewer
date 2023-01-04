@@ -10,7 +10,3 @@ node_modules/
 
 package-lock.json
 
-# bundle config files
-webpack.config.js
-webpack.dev.config.js
-webpack.page.config.js
