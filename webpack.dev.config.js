@@ -40,5 +40,5 @@ const webpackConfigDev = {
 	mode: 'development'
 };
 
-module.exports = merge( webpackConfigBase, webpackConfigDev );
+module.exports = merge( webpackConfigBase( true ), webpackConfigDev );
  

@@ -38,4 +38,4 @@ const webpackConfigDev = {
 	mode: 'production'
 };
 
-module.exports = merge( webpackConfigBase, webpackConfigDev );
+module.exports = merge( webpackConfigBase( false ), webpackConfigDev );
