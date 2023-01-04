@@ -16,5 +16,5 @@ import { SnapsHelper } from './src/utils/snapsHelper';
 export {
 	DXFViewer,
 	Merger,
-	SnapsHelper as Snapshelper
+	SnapsHelper
 };
