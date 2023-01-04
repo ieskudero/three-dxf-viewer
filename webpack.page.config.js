@@ -14,6 +14,7 @@ module.exports = ( env ) => {
 	 return {
 		 entry: {
 			 main: './example/index.js',
+			 css: './example/index.css',
 		 },
 		 output: {
 			 path: path.resolve( __dirname, './dist' ),

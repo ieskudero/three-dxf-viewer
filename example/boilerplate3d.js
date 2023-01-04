@@ -20,6 +20,7 @@ export class Boilerplate3D {
 	
 		// dom
 		this.container = document.createElement( 'div' );
+		this.container.id = 'canvas3d';
 		document.body.appendChild( this.container );
 	
 		// renderer

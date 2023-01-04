@@ -3,21 +3,12 @@ import { Merger } from '../src/utils/merger.js';
 import { SnapsHelper } from '../src/utils/snapsHelper';
 import { Boilerplate3D } from './boilerplate3d.js';
 
+//global variables
+const font = 'fonts/helvetiker_regular.typeface.json';
+let snaps, domain;
 
-let font = 'fonts/helvetiker_regular.typeface.json';
-
-let snaps;
-
-//attach load file event listener
-const fileInput = document.getElementById( 'file' );
-fileInput.addEventListener( 'change', loadFile );
-
-const loading = document.getElementById( 'loading' );
-
-async function loadFile( event ) {
-	var file = event.target.files[0];
-
-	loading.style.display = 'block';
+//EXAMPLE CODE
+async function loadDXF( file ) {
 	domain.clear();
 
 	let dxf = await new DXFViewer().getFromFile( file, font );
@@ -33,9 +24,42 @@ async function loadFile( event ) {
 		//add dxf
 		domain.addDXF( merged );
 	}
+}
+  
+class Boilerplate {
+
+	constructor() {
+		//scene managing code
+		domain = new Boilerplate3D(); 
+
+		//attach load file & drop  event listener
+		const input = document.getElementById( 'file' );
+		input.addEventListener( 'change', async ( e ) => await this.loadFile( e ) );
+		const canvas3d = document.getElementById( 'canvas3d' );
+		canvas3d.addEventListener( 'drop', async ( e ) => { 
+			e.preventDefault();
+			await this.loadFile( e );
+		} );
+		canvas3d.addEventListener( 'dragover', ( e ) => e.preventDefault() );
+		
+		this.loading = document.getElementById( 'loading' );
+	}
+
+	async loadFile( event ) {	
 	
-	loading.style.display = 'none';
+		var file = event instanceof DragEvent ? event.dataTransfer.files[0] : event.target.files[0];
+	
+		this.loading.style.display = 'block';
+	
+		await loadDXF( file );		
+		
+		this.loading.style.display = 'none';
+	}
 }
 
-//scene managing code
-const domain = new Boilerplate3D(); 
+
+//init html
+new Boilerplate();
+
+
+
