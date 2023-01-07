@@ -79,6 +79,9 @@ export class DXFViewer {
 			//parse layers
 			data.tables.layers = new LayerHelper().parse( data.tables.layers );
 
+			//export layers
+			this.layers = data.tables.layers;
+
 			//return draw
 			resolve( await this._drawDXF( data ) );
 		} );
