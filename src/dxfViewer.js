@@ -12,9 +12,7 @@ import { HatchEntity } from './entities/hatchEntity';
 
 import * as Helper from 'dxf/src/Helper';
 import { Properties } from './entities/baseEntity/properties';
-
-// DXF FORMAT DOCUMENTATION
-// 
+import { LayerHelper } from './entities/baseEntity/layerHelper.js';
 
 /**
  * @class DXFViewer
@@ -75,6 +73,11 @@ export class DXFViewer {
 
 			//cache
 			this._toCache( path, data );
+
+			this._lastDXF = data;
+
+			//parse layers
+			data.tables.layers = new LayerHelper().parse( data.tables.layers );
 
 			//return draw
 			resolve( await this._drawDXF( data ) );

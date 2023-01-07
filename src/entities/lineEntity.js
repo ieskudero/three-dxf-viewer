@@ -48,7 +48,7 @@ export class LineEntity extends BaseEntity {
 
 			//create mesh
 			let mesh = new Line( geometry, material );
-			if( material.type === 'LineDashedMaterial' ) this._fixMeshToDrawDashedLines( mesh );
+			if( material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( mesh );
 			mesh.userData = entity;
 
 			//add to group
@@ -72,7 +72,7 @@ export class LineEntity extends BaseEntity {
 			if( ltype && ltype.pattern.length > 0 ) lineType = 'dashed';
 		}
 
-		let material = this._getMaterial( entity, lineType );
+		let material = this._colorHelper.getMaterial( entity, lineType, this.data.tables );
 
 		let geometry = new BufferGeometry().setFromPoints( [
 			new Vector3( entity.start.x, entity.start.y, entity.start.z ),
@@ -98,11 +98,11 @@ export class LineEntity extends BaseEntity {
 			if( ltype && ltype.pattern.length > 0 ) lineType = 'dashed';
 		}
 
-		let material = this._getMaterial( entity, lineType );
+		let material = this._colorHelper.getMaterial( entity, lineType, this.data.tables );
 
 		let points = this._getPolyLinePoints( entity.vertices, entity.closed );
 		let geometry = new BufferGeometry().setFromPoints( points );
-		geometry.setIndex( new BufferAttribute( new Uint16Array( this._generatePointIndex( points ) ), 1 ) );
+		geometry.setIndex( new BufferAttribute( new Uint16Array( this._geometryHelper.generatePointIndex( points ) ), 1 ) );
 
 		return { geometry: geometry, material: material };
 	}

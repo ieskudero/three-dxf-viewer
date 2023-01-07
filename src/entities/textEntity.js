@@ -88,7 +88,7 @@ export class TextEntity extends BaseEntity {
 		this._translateCenter( geometry, entity, posAndRot.pos );
             
 		//get material
-		let material = this._getMaterial( entity, 'shape' );
+		let material = this._colorHelper.getMaterial( entity, 'shape', this.data.tables );
 
 		return { geometry: geometry, material: material };
 	}
@@ -191,9 +191,9 @@ export class TextEntity extends BaseEntity {
 		result.pos.z = axisOnXYZ ? xAxisZ : z;
 
 		if( rotation ) 
-			result.rotation = new Quaternion().setFromAxisAngle( this._zAxis, ( rotation * Math.PI ) / 180 );
+			result.rotation = new Quaternion().setFromAxisAngle( this._geometryHelper.zAxis, ( rotation * Math.PI ) / 180 );
 		else if ( drawingDirection === 3 || ( ( axisOnXYZ && y === 1 ) || ( !axisOnXYZ && xAxisY === 1 ) ) )
-			result.rotation = new Quaternion().setFromAxisAngle( this._zAxis, Math.PI / 2 );
+			result.rotation = new Quaternion().setFromAxisAngle( this._geometryHelper.zAxis, Math.PI / 2 );
 
 		return result;
 	}

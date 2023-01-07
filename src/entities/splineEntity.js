@@ -48,7 +48,7 @@ export class SplineEntity extends BaseEntity {
 
 			//create mesh
 			let mesh = new Line( geometry, material );
-			if( material.type === 'LineDashedMaterial' ) this._fixMeshToDrawDashedLines( mesh );
+			if( material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( mesh );
 			mesh.userData = entity;
 
 			//add to group
@@ -72,12 +72,12 @@ export class SplineEntity extends BaseEntity {
 			if( ltype && ltype.pattern.length > 0 ) lineType = 'dashed';
 		}
 
-		let material = this._getMaterial( entity, lineType );
+		let material = this._colorHelper.getMaterial( entity, lineType, this.data.tables );
 		
 		var points = this._getBSplinePolyline( entity.controlPoints, entity.degree, entity.knots );
 		
 		let geometry = new BufferGeometry().setFromPoints( points );
-		geometry.setIndex( new BufferAttribute( new Uint16Array( this._generatePointIndex( points ) ), 1 ) );
+		geometry.setIndex( new BufferAttribute( new Uint16Array( this._geometryHelper.generatePointIndex( points ) ), 1 ) );
             
 		return { geometry: geometry, material: material };
 	}

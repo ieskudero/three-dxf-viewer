@@ -92,7 +92,7 @@ export class HatchEntity extends BaseEntity {
 		if( entity.fillType === 'SOLID' ) {
             
 			geometry = this._generateBoundary( entity.boundary );
-			material = this._getMaterial( entity, 'shape' );
+			material = this._colorHelper.getMaterial( entity, 'shape', this.data.tables );
 		}
 		else if( entity.fillType === 'PATTERN' ) {
 
@@ -108,7 +108,7 @@ export class HatchEntity extends BaseEntity {
                 if( ltype && ltype.pattern.length > 0 ) lineType = 'dashed';
             }
 
-            material = this._getMaterial( entity, lineType );*/
+            material = this._colorHelper.getMaterial( entity, lineType, this.data.tables );*/
 		}
         
 		this._extrusionTransform( entity, geometry );
@@ -269,7 +269,7 @@ export class HatchEntity extends BaseEntity {
 			array[j * 3 + 2] = points[j].z;                            
 		}
 		geometry.setAttribute( 'position', new BufferAttribute( array, 3 ) );
-		geometry.setIndex( new BufferAttribute( new Uint16Array( this._generatePointIndex( points ) ), 1 ) );
+		geometry.setIndex( new BufferAttribute( new Uint16Array( this._geometryHelper.generatePointIndex( points ) ), 1 ) );
 
 		return geometry;
 	}

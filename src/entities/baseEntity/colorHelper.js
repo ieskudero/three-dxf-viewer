@@ -1,32 +1,29 @@
 import { DoubleSide, LineBasicMaterial, LineDashedMaterial, MeshBasicMaterial } from 'three';
-import { BaseCache } from './baseCache';
 
 var _materialCache = {};
 
 /**
- * @class BaseColor
- * @see {@link BaseCache.md}
- * @classdesc Base class for all the entities. It stores the color methods & information.
+ * @class ColorHelper
+ * @classdesc Color management helper class. Converts colorNumber to colorHex & stores materials in cache.
  */
-export class BaseColor extends BaseCache {
+export class ColorHelper {
 
-	constructor() {
-		super();
-	}
+	constructor() {}
 
 	/**
 	 * Returns the entity's material. It will create a new material if it doesn't exist in the cache.
 	 * @param entity {Entity} DXFViewer Entity.
      * @param type {string} A flag to indicate the type of material to be created. It can be 'shape', 'line' or 'dashed'.
+	 * @param tables {Object} dxf tables object, conatining at least layers and ltypes.
      * @return {THREE.Material} Material
 	*/
-	_getMaterial( entity, type ) {
-		let color = this._getColorHex( entity );
+	getMaterial( entity, type, tables ) {
+		let color = this._getColorHex( entity, tables.layers );
 		let key = entity.lineTypeName + type + color;
 		if( _materialCache[key] ) return _materialCache[key];
 		
 		let mat = type === 'shape' ? new MeshBasicMaterial( { side: DoubleSide } ) : 
-			( type === 'line' ? new LineBasicMaterial() : this._createDashedMaterial( entity ) );
+			( type === 'line' ? new LineBasicMaterial() : this._createDashedMaterial( entity, tables.ltypes ) );
 
 		mat.color.setHex( color );
 		mat.color.convertSRGBToLinear();
@@ -36,12 +33,12 @@ export class BaseColor extends BaseCache {
 		return mat;
 	}
 
-	_createDashedMaterial( entity ) {
+	_createDashedMaterial( entity, ltypes ) {
 		let gapSize = 4;
 		let dashSize = 4;
 
 		//TODO: create a better way to handle this. Ideal would be to create a shader that mimics the pattern of the line type
-		let type = entity.lineTypeName && Object.prototype.hasOwnProperty.call( this.data.tables.ltypes, entity.lineTypeName ) ? this.data.tables.ltypes[ entity.lineTypeName ] : null;
+		let type = entity.lineTypeName && Object.prototype.hasOwnProperty.call( ltypes, entity.lineTypeName ) ? ltypes[ entity.lineTypeName ] : null;
 		dashSize = type.pattern && type.pattern.length > 0 ? Math.max( ...type.pattern.map( e => e.length ) ) : 4;
 		gapSize = type.pattern && type.pattern.length > 0 ? type.pattern.map( e => e.length === -1 ).length : 4;
 
@@ -50,12 +47,22 @@ export class BaseColor extends BaseCache {
 		return new LineDashedMaterial( { gapSize: gapSize, dashSize: dashSize } );
 	}
 
-	_getColorHex( entity ) {
+	_getColorHex( entity, layers ) {
 		let colorNumber = entity.fillColor ? entity.fillColor : entity.colorNumber;
 		if( !colorNumber || colorNumber === 0 ) {
-			let layerObj = Object.prototype.hasOwnProperty.call( this.data.tables.layers, entity.layer ) ? this.data.tables.layers[ entity.layer ] : null;
-			if( layerObj ) colorNumber = layerObj.colorNumber;
+			let layer = Object.prototype.hasOwnProperty.call( layers, entity.layer ) ? layers[ entity.layer ] : null;
+			if( layer ) return layer.color;
 		}
+
+		return this.getColorByNumber( colorNumber );
+	}
+
+	/**
+	 * Returns hex color from color number. Based on DXF format table colors
+	 * @param colorNumber {Number} dxf colorNumber.
+     * @return {Hexadecimal} color's hex number
+	*/
+	getColorByNumber( colorNumber ) {
 		switch ( colorNumber ) {
 		case 0	: return 0x000000;            
 		case 1	: return 0xFF0000;
@@ -314,7 +321,7 @@ export class BaseColor extends BaseCache {
 		case 254: return 0xBEBEBE;
 		case 255: return 0xFFFFFF;
 		}
-
+	
 		//default
 		return 0xffffff;
 	}

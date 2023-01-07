@@ -63,7 +63,7 @@ export class SolidEntity extends BaseEntity {
 	*/
 	drawSolid( entity ) {
         
-		let material = this._getMaterial( entity, 'shape' );
+		let material = this._colorHelper.getMaterial( entity, 'shape', this.data.tables );
 		
 		let points = entity.corners.map( p => new Vector3( p.x, p.y, p.z ) );
 		points.splice( 0, 0, points.pop() );

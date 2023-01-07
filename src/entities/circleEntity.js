@@ -51,7 +51,7 @@ export class CircleEntity extends BaseEntity {
 
 			//create mesh
 			let mesh = new Line( geometry, material );
-			if( material.type === 'LineDashedMaterial' ) this._fixMeshToDrawDashedLines( mesh );
+			if( material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( mesh );
 			mesh.userData = entity;
 
 			//add to group
@@ -75,7 +75,7 @@ export class CircleEntity extends BaseEntity {
 			if( ltype && ltype.pattern.length > 0 ) lineType = 'dashed';
 		}
         
-		let material = this._getMaterial( entity, lineType );
+		let material = this._colorHelper.getMaterial( entity, lineType, this.data.tables );
 				
 		let startAngle, endAngle;
 		if ( entity.type === 'CIRCLE' ) {
@@ -100,7 +100,7 @@ export class CircleEntity extends BaseEntity {
 
 		let points = curve.getPoints( 32 );
 		var geometry = new BufferGeometry().setFromPoints( points );
-		geometry.setIndex( new BufferAttribute( new Uint16Array( this._generatePointIndex( points ) ), 1 ) );
+		geometry.setIndex( new BufferAttribute( new Uint16Array( this._geometryHelper.generatePointIndex( points ) ), 1 ) );
     
 		let center = {
 			x: entity.center ? entity.center.x : entity.x,
@@ -126,7 +126,7 @@ export class CircleEntity extends BaseEntity {
 			if( ltype && ltype.pattern.length > 0 ) lineType = 'dashed';
 		}
         
-		let material = this._getMaterial( entity, lineType );
+		let material = this._colorHelper.getMaterial( entity, lineType, this.data.tables );
 
 		let xrad = Math.sqrt( Math.pow( entity.majorX, 2 ) + Math.pow( entity.majorY, 2 ) );
 		let yrad = xrad * entity.axisRatio;
@@ -149,7 +149,7 @@ export class CircleEntity extends BaseEntity {
 		let points = curve.getPoints( 32 );
         
 		let geometry = new BufferGeometry().setFromPoints( points );
-		geometry.setIndex( new BufferAttribute( new Uint16Array( this._generatePointIndex( points ) ), 1 ) );
+		geometry.setIndex( new BufferAttribute( new Uint16Array( this._geometryHelper.generatePointIndex( points ) ), 1 ) );
     
 		this._extrusionTransform( entity, geometry, center );
 
@@ -168,11 +168,11 @@ export class CircleEntity extends BaseEntity {
 	}
 	
 	_rotateXY( startAngle, endAngle ) {
-		const sv = this._xAxis.clone().applyAxisAngle( this._zAxis, startAngle ) ;
-		const ev = this._xAxis.clone().applyAxisAngle( this._zAxis, endAngle );
+		const sv = this._geometryHelper.xAxis.clone().applyAxisAngle( this._geometryHelper.zAxis, startAngle ) ;
+		const ev = this._geometryHelper.xAxis.clone().applyAxisAngle( this._geometryHelper.zAxis, endAngle );
 
-		sv.applyAxisAngle( this._yAxis, Math.PI );
-		ev.applyAxisAngle( this._yAxis, Math.PI );
+		sv.applyAxisAngle( this._geometryHelper.yAxis, Math.PI );
+		ev.applyAxisAngle( this._geometryHelper.yAxis, Math.PI );
 
 		return [ Math.atan2( sv.y, sv.x ), Math.atan2( ev.y, ev.x ) ];
 	}
