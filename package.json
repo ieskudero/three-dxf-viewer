@@ -44,7 +44,7 @@
         "jsdoc-to-markdown": "8.0.0",
         "eslint": "8.31.0",
         "eslint-config-recommended": "4.1.0",
-		"eslint-plugin-import": "2.26.0"
+		"eslint-plugin-import": "2.26.0",
 		"lil-gui": "0.17.0"
     },
     "dependencies": {
