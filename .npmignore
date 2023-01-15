@@ -3,6 +3,7 @@ src
 resources
 dxfViewer.js
 jsdoc.js
+example
 
 # compiler
 webpack.config.js
