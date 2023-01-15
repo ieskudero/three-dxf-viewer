@@ -42,9 +42,9 @@
         "worker-loader": "3.0.8",
 		"webpack-merge": "5.8.0",
         "jsdoc-to-markdown": "8.0.0",
-        "eslint": "8.31.0",
+        "eslint": "8.32.0",
         "eslint-config-recommended": "4.1.0",
-		"eslint-plugin-import": "2.26.0",
+		"eslint-plugin-import": "2.27.4",
 		"lil-gui": "0.17.0"
     },
     "dependencies": {
