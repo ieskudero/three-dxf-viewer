@@ -14,11 +14,12 @@ export class Merger{
 	 * Returns a merged scene. Setting clone to true avoids changing original geometry, but its permormance is lower
 	 * @param scene {THREE.Object3D} Threejs object (usually the scene itself).
 	 * @param clone {boolean} Flag to change cloning of scene.
+	 * @param uuids {Array} Array of uuids to merge only specific objects.
      * @return {THREE.Object3D} object with merged data
 	*/
-	merge( scene, clone = true ) {
+	merge( scene, clone = true, uuids = [] ) {
 
-		let { mesh, line } = this._getMergedObjects( scene, clone );
+		let { mesh, line } = this._getMergedObjects( scene, clone, uuids );
 
 		//add mesh
 		if( mesh ) scene.add( mesh );
@@ -31,9 +32,9 @@ export class Merger{
 		return scene;
 	}
 
-	_getMergedObjects( scene, clone ) {
+	_getMergedObjects( scene, clone, uuids ) {
         
-		let { mesh, line } = this._getMergedGeometry( scene, clone );
+		let { mesh, line } = this._getMergedGeometry( scene, clone, uuids );
 
 		const m = mesh.geometry ? new Mesh( mesh.geometry, mesh.materials ) : null;
 		const l = line.geometry ? new LineSegments( line.geometry, line.materials ) : null;
@@ -41,7 +42,7 @@ export class Merger{
 		return { mesh: m, line: l };
 	}
 
-	_getMergedGeometry( scene, clone ) {
+	_getMergedGeometry( scene, clone, uuids ) {
 		let orderedMeshes = [];
 		let orderedLines = [];
 		//update all matrix
@@ -49,6 +50,8 @@ export class Merger{
         
 		this._removableTraverse( scene, child => {
 			if( !( child.isMesh || child.isLineSegments || child.isLine ) ) return;
+
+			if( uuids.length > 0 && !uuids.includes( child.uuid ) ) return;
 
 			//get geometry
 			let geometry = clone ? child.geometry.clone() : child.geometry;
