@@ -2,7 +2,7 @@ import { DXFViewer } from '../../src/dxfViewer.js';
 import { Boilerplate } from '../boilerplate.js';
 
 //global variables
-const font = '../fonts/helvetiker_regular.typeface.json';
+const font = 'fonts/helvetiker_regular.typeface.json';
 
 //init html
 let html = new Boilerplate();

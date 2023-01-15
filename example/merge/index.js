@@ -4,7 +4,7 @@ import { SnapsHelper } from '../../src/utils/snapsHelper';
 import { Boilerplate } from '../boilerplate.js';
 
 //global variables
-const font = '../fonts/helvetiker_regular.typeface.json';
+const font = 'fonts/helvetiker_regular.typeface.json';
 let snaps;
 
 //init html

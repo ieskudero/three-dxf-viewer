@@ -5,7 +5,7 @@ import { Boilerplate } from '../boilerplate.js';
 import GUI from 'lil-gui';
 
 //global variables
-const font = '../fonts/helvetiker_regular.typeface.json';
+const font = 'fonts/helvetiker_regular.typeface.json';
 let viewer = new DXFViewer();
 let snaps, gui;
 

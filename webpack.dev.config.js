@@ -6,6 +6,7 @@ const webpackConfigBase = require( './webpack.base.config.js' );
 
 const HtmlWebPackPlugin = require( 'html-webpack-plugin' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
+const CopyPlugin = require( 'copy-webpack-plugin' );
 
 let entry = {};
 let plugins = [];
@@ -31,6 +32,11 @@ const webpackConfigDev = {
 		new MiniCssExtractPlugin( {
 			filename: '[name].css',
 			chunkFilename: '[id].css'
+		} ),
+		new CopyPlugin( {
+			patterns: [
+				{ from: 'example/fonts', to: 'fonts' },
+			],
 		} )
 	] ),
 	devServer: {
