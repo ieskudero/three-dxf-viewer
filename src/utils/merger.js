@@ -39,12 +39,18 @@ export class Merger{
 		const m = mesh.geometry ? new Mesh( mesh.geometry, mesh.materials ) : null;
 		const l = line.geometry ? new LineSegments( line.geometry, line.materials ) : null;
 
+		if( m ) m.userData = mesh.userData;
+		if( l ) l.userData = line.userData;
+
 		return { mesh: m, line: l };
 	}
 
 	_getMergedGeometry( scene, clone, uuids ) {
 		let orderedMeshes = [];
 		let orderedLines = [];
+		let meshUserData = [];
+		let lineUserData = [];
+		let userDataTemp = null;
 		//update all matrix
 		scene.updateWorldMatrix( false, true );
         
@@ -82,6 +88,9 @@ export class Merger{
 					geometry.deleteAttribute( 'uv' );
 					geometry.setAttribute( 'uv', uv );
 				}
+
+				userDataTemp = meshUserData;
+
 			} else {
 				//LINE
 				if ( child.geometry.index ) {
@@ -96,8 +105,14 @@ export class Merger{
 				//IF THEY ARE, ADD THEM TO THOSE IN NEED INSTEAD OF REMOVING THEM FROM THOSE HAVING THEM
 				geometry.deleteAttribute( 'uv' );
 				geometry.deleteAttribute( 'normal' );
+				
+				userDataTemp = lineUserData;
 			}
-            
+
+			//add user data			
+			userDataTemp.push( { uuid: child.uuid, userData: child.userData } );
+			
+			//add to group
 			let list = child.isMesh ? orderedMeshes : orderedLines;            
 			let group = this._findGroup( list, child.material );
 			if( !group ) {
@@ -120,11 +135,13 @@ export class Merger{
 		return { 
 			mesh: {
 				geometry: groupedMesh ? groupedMesh.geometry : null, 
-				materials: groupedMesh ? groupedMesh.materials : null
+				materials: groupedMesh ? groupedMesh.materials : null,
+				userData: meshUserData
 			},
 			line: {
 				geometry: groupedLines ? groupedLines.geometry : null, 
-				materials: groupedLines ? groupedLines.materials : null
+				materials: groupedLines ? groupedLines.materials : null,
+				userData: lineUserData
 			}
 		};        
 	}
