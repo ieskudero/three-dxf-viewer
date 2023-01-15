@@ -8,8 +8,8 @@ const CopyPlugin = require( 'copy-webpack-plugin' );
 
 const webpackConfigDev = {
 	entry: {
-		main: './example/index.js',
-		css: './example/index.css',
+		main: './example/merge/index.js',
+		css: './example/merge/index.css',
 	},
 	optimization: {
 		minimize: true,
@@ -39,7 +39,7 @@ const webpackConfigDev = {
 	},
 	plugins: [
 		new HtmlWebPackPlugin( {
-			template: './example/index.html',
+			template: './example/merge/index.html',
 			filename: './index.html',
 			chunks: [ 'main', 'css' ]
 		} ),
