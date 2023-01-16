@@ -54,10 +54,14 @@ export class Merger{
 		//update all matrix
 		scene.updateWorldMatrix( false, true );
         
+		//get all uuids into an object for fast comparing
+		let uuidsobj = {};
+		uuids.forEach( uuid => uuidsobj[ uuid ] = true );
+
 		this._removableTraverse( scene, child => {
 			if( !( child.isMesh || child.isLineSegments || child.isLine ) ) return;
 
-			if( uuids.length > 0 && !uuids.includes( child.uuid ) ) return;
+			if( uuids.length > 0 && !uuidsobj[ child.uuid ] ) return;
 
 			//get geometry
 			let geometry = clone ? child.geometry.clone() : child.geometry;
