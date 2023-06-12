@@ -1,4 +1,4 @@
-import { Box3, Color, LinearToneMapping, MOUSE, OrthographicCamera, Scene, sRGBEncoding, WebGLRenderer } from 'three';
+import { Box3, Color, LinearToneMapping, MOUSE, OrthographicCamera, Scene, SRGBColorSpace, WebGLRenderer } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 export class Boilerplate3D {
@@ -29,7 +29,7 @@ export class Boilerplate3D {
 		} );
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
 		this.container.appendChild( this.renderer.domElement );
-		this.renderer.outputEncoding = sRGBEncoding;
+		this.renderer.outputColorSpace = SRGBColorSpace;
 		this.renderer.toneMapping = LinearToneMapping;
 		this.renderer.toneMappingExposure = 3;
 		

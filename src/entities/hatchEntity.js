@@ -248,11 +248,11 @@ export class HatchEntity extends BaseEntity {
 
         
         
-		let polyGeo = polylineGeos.length > 0 ? BufferGeometryUtils.mergeBufferGeometries( polylineGeos, false ) : null;
-		let edgeGeo = edgeGeos.length > 0 ? BufferGeometryUtils.mergeBufferGeometries( edgeGeos, false ) : null;
+		let polyGeo = polylineGeos.length > 0 ? BufferGeometryUtils.mergeGeometries( polylineGeos, false ) : null;
+		let edgeGeo = edgeGeos.length > 0 ? BufferGeometryUtils.mergeGeometries( edgeGeos, false ) : null;
 
 		if( polyGeo && edgeGeo ) 
-			return BufferGeometryUtils.mergeBufferGeometries( [ polyGeo, edgeGeo ], false );
+			return BufferGeometryUtils.mergeGeometries( [ polyGeo, edgeGeo ], false );
 		else if( polyGeo )
 			return polyGeo;
 		else if( edgeGeo )

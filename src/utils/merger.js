@@ -154,8 +154,8 @@ export class Merger {
 		let materials = orderedGroups.map( og => og.material );
 
 		//merge with no grouping        
-		let geometry = BufferGeometryUtils.mergeBufferGeometries( 
-			orderedGroups.map( group => BufferGeometryUtils.mergeBufferGeometries( group.geometries, false ) ), 
+		let geometry = BufferGeometryUtils.mergeGeometries( 
+			orderedGroups.map( group => BufferGeometryUtils.mergeGeometries( group.geometries, false ) ), 
 			true );
 
 		//order now by material
