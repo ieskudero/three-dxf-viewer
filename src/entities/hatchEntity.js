@@ -65,7 +65,7 @@ export class HatchEntity extends BaseEntity {
                 
 				let obj = new Mesh( geometry, material );
 
-				obj.userData = entity;
+				obj.userData = { entity: entity };
 				obj.renderOrder = entity.fillType === 'SOLID' ? -1 : 0;
 				obj.position.z = entity.fillType === 'SOLID' ? -0.1 : 0;
 

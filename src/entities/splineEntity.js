@@ -49,7 +49,7 @@ export class SplineEntity extends BaseEntity {
 			//create mesh
 			let mesh = new Line( geometry, material );
 			if( material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( mesh );
-			mesh.userData = entity;
+			mesh.userData = { entity: entity };
 
 			//add to group
 			group.add( mesh );

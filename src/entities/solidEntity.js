@@ -48,7 +48,7 @@ export class SolidEntity extends BaseEntity {
 
 			//create mesh
 			let mesh = new Mesh( geometry, material );
-			mesh.userData = entity;
+			mesh.userData = { entity: entity };
 
 			//add to group
 			group.add( mesh );

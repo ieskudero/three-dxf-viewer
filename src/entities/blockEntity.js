@@ -35,7 +35,10 @@ export class BlockEntity extends BaseEntity {
 		let group = new Group();
 		group.name = 'BLOCK';
 		group.position.set( -entity.x, -entity.y, -entity.z );
-		group.userData = entity;
+		group.userData = { 
+			entity: entity,
+			entities: []
+		};
         
 		for( let i = 0; i < entity.entities.length; i++ ) {
 			let _entity = entity.entities[i];
@@ -48,7 +51,7 @@ export class BlockEntity extends BaseEntity {
 
 				let obj3d = new Line( _drawData.geometry, _drawData.material );
 				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
-				obj3d.userData = _entity;
+				obj3d.userData = group.userData = { entity: _entity };
 
 				group.add( obj3d );
 			} break;
@@ -58,7 +61,7 @@ export class BlockEntity extends BaseEntity {
 
 				let obj3d = new Line( _drawData.geometry, _drawData.material );
 				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
-				obj3d.userData = _entity;
+				obj3d.userData = { entity: _entity };
 
 				group.add( obj3d );
 			} break;
@@ -68,7 +71,7 @@ export class BlockEntity extends BaseEntity {
 
 				let obj3d = new Line( _enti_drawDatay.geometry, _enti_drawDatay.material );
 				if( _enti_drawDatay.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
-				obj3d.userData = _entity;
+				obj3d.userData = { entity: _entity };
 
 				group.add( obj3d );
 			} break;
@@ -77,7 +80,7 @@ export class BlockEntity extends BaseEntity {
 
 				let obj3d = new Line( _drawData.geometry, _drawData.material );
 				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
-				obj3d.userData = _entity;
+				obj3d.userData = { entity: _entity };
 
 				group.add( obj3d );
 			} break;
@@ -86,7 +89,7 @@ export class BlockEntity extends BaseEntity {
 
 				let obj3d = new Line( _drawData.geometry, _drawData.material );
 				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
-				obj3d.userData = _entity;
+				obj3d.userData = { entity: _entity };
 
 				group.add( obj3d );
 			} break;
@@ -94,7 +97,7 @@ export class BlockEntity extends BaseEntity {
 				let _drawData = this._solidEntity.drawSolid( _entity );
 
 				let obj3d = new Mesh( _drawData.geometry, _drawData.material );
-				obj3d.userData = _entity;
+				obj3d.userData = { entity: _entity };
 
 				group.add( obj3d );
 			} break;
@@ -104,7 +107,7 @@ export class BlockEntity extends BaseEntity {
 				let _drawData = this._textEntity.drawText( _entity );
 
 				let obj3d = new Mesh( _drawData.geometry, _drawData.material );
-				obj3d.userData = _entity;
+				obj3d.userData = { entity: _entity };
 
 				group.add( obj3d );
 			} break;
@@ -114,7 +117,7 @@ export class BlockEntity extends BaseEntity {
 					let obj3d = new Group();
 					obj3d.name = 'INSERT';
 					obj3d.add( this.drawBlock( block ) );
-					obj3d.userData = _entity;
+					obj3d.userData = { entity: _entity };
 
 					let sx = _entity.scaleX ? _entity.scaleX : 1;
 					let sy = _entity.scaleY ? _entity.scaleY : 1;
@@ -137,7 +140,7 @@ export class BlockEntity extends BaseEntity {
 				if( _drawData.geometry ) {
 					let obj3d = _entity.fillType === 'SOLID' ? new Mesh( _drawData.geometry, _drawData.material ) : new LineSegments( _drawData.geometry, _drawData.material );
 					if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
-					obj3d.userData = _entity;
+					obj3d.userData = { entity: _entity };
 					obj3d.renderOrder = _entity.fillType === 'SOLID' ? -1 : 0;
 					obj3d.position.z = _entity.fillType === 'SOLID' ? -0.1 : 0;
 

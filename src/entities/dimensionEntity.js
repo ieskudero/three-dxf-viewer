@@ -49,8 +49,8 @@ export class DimensionEntity extends BaseEntity {
 			if( !entity.blockObj ) continue;
             
 			let dimGroup = new Group();
-			dimGroup.userData = entity;
 			dimGroup.name = 'BLOCK';
+			dimGroup.userData = { entity: entity };
 			let block = this._blockEntity.drawBlock( entity.blockObj );
 			dimGroup.add( block );
 
