@@ -1,5 +1,5 @@
 import { BoxGeometry, Mesh, MeshBasicMaterial, Plane, Raycaster, Vector2, Vector3 } from 'three';
-import { Snaps } from './snaps.js';
+import { Snaps } from '../tools/snaps.js';
 
 /**
  * @class Snapshelper
