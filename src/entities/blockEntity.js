@@ -7,6 +7,7 @@ import { SolidEntity } from './solidEntity';
 import { CircleEntity } from './circleEntity';
 import { SplineEntity } from './splineEntity';
 import { HatchEntity } from './hatchEntity';
+import { Merger } from '../utils/merger';
 
 /**
  * @class BlockEntity
@@ -162,6 +163,8 @@ export class BlockEntity extends BaseEntity {
 			}
 		}
 
+		this._mergeGroup( group );
+
 		return group;
 	}
 	
@@ -175,5 +178,29 @@ export class BlockEntity extends BaseEntity {
 	_hideBlockEntity( entity ) {
 		if( entity && entity.name.toLowerCase().startsWith( '*paper_space' ) ) return true;
 		return this._hideEntity( entity );
+	}
+
+	_mergeGroup( group ) {
+		
+		const merger = new Merger();
+		// BLOCK
+		const blocks = group.children.filter( c => c.name === 'BLOCK' || c.name === 'INSERT' );
+		const noBlocks = group.children.filter( c => c.name !== 'BLOCK' && c.name !== 'INSERT' );
+
+		//remove blocks from children
+		blocks.forEach( b => group.remove( b ) );
+
+		//merge all the rest
+		if( noBlocks.length > 0 ) {
+
+			//store in userData all the entities
+			group.userData.entities = [];
+			noBlocks.forEach( c => group.userData.entities.push( c ) );
+
+			merger.merge( group, true, true );
+		} 
+
+		//add blocks again
+		blocks.forEach( b => group.add( b ) );
 	}
 }
