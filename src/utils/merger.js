@@ -6,7 +6,7 @@ import { Mesh, BufferAttribute, LineSegments } from 'three';
  * @classdesc This class merges all meshes and lines of a scene into a single mesh and line.
  * It checks and fixes attributes before merging all using [BufferGeometryUtils](https://threejs.org/docs/#examples/utils/BufferGeometryUtils)
  */
-export class Merger{
+export class Merger {
 	constructor() {
 	}
 
@@ -72,13 +72,12 @@ export class Merger{
 				if ( geometry.index ) geometry = geometry.toNonIndexed();
 
 				//if normal-s not presented add
-				if( typeof geometry.attributes.normal === 'undefined' ) {
-					geometry.computeVertexNormals();
-				}
+				if( !geometry.hasAttribute( 'normal' ) ) geometry.computeVertexNormals();				
 
 				//if uv-s not presented add
-				if( typeof geometry.attributes.uv === 'undefined' ) {
-					let uv = new BufferAttribute( new Float32Array( geometry.attributes.position.count * 2 ), 2 );
+				let uv = geometry.getAttribute( 'uv' );
+				if ( !uv ) {
+					uv = new BufferAttribute( new Float32Array( geometry.attributes.position.count * 2 ), 2 );
 					geometry.setAttribute( 'uv', uv );
 				}
 
