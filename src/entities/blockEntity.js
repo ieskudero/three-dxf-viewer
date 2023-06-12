@@ -197,7 +197,7 @@ export class BlockEntity extends BaseEntity {
 			group.userData.entities = [];
 			noBlocks.forEach( c => group.userData.entities.push( c ) );
 
-			merger.merge( group, true, true );
+			merger.merge( group );
 		} 
 
 		//add blocks again
