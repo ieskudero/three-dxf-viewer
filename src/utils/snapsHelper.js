@@ -40,6 +40,11 @@ export class SnapsHelper {
 		this.planeNormal = new Vector3();
 		this.mousePos = new Vector3();
 		this.vectorHelper = new Vector3();
+
+		//detect zoom change and change the threshold accordingly
+		document.addEventListener( 'wheel', () => {
+			this._changeSquareSize = true;
+		} );
 	}
 
 	_mouseDown() {
@@ -94,8 +99,9 @@ export class SnapsHelper {
 	}
 
 	_showSnapSquare( snap ) {
-		if( !this._snapSquare ) {
-			let size = 10;
+		if( !this._snapSquare || this._changeSquareSize ) {
+			this._clearSnapSquare();
+			let size = this._getSize();
 			this._snapSquare = new Mesh( new BoxGeometry( size, size, size ), new MeshBasicMaterial( { color: 0xffa500, wireframe: true } ) );
 			this._snapSquare.visible = false;
 			this._snapSquare.initial = true;
@@ -106,6 +112,17 @@ export class SnapsHelper {
 		this._snapSquare.visible = true;
 
 		console.log( `distance from Mouse: ${snap.distance}, 3d entity: ${snap.snap.entity.uuid}, DXF entity: ${snap.snap.entity.userData.handle}` );
+	}
+
+	_getSize() {
+		const size = {
+			width: this.camera.right / this.camera.zoom - this.camera.left / this.camera.zoom,
+			height: this.camera.top / this.camera.zoom - this.camera.bottom / this.camera.zoom
+		};
+
+		delete this._changeSquareSize;
+
+		return Math.max( size.width, size.height ) / 100;
 	}
 
 	_getMousePosInScene( event ) {
