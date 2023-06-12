@@ -1,8 +1,8 @@
 import { DXFViewer } from '../../src/dxfViewer.js';
 import { SnapsHelper } from '../../src/utils/snapsHelper.js';
-import { Merger } from '../../src/utils/merger.js';
 import { Boilerplate } from '../boilerplate.js';
 import GUI from 'lil-gui';
+import { Hover } from '../../src/utils/hover.js';
 
 //global variables
 const font = 'fonts/helvetiker_regular.typeface.json';
@@ -23,6 +23,9 @@ html.onLoad = async ( file ) => {
 		if( snaps ) snaps.clear();
 		snaps = new SnapsHelper( dxf, html.three.renderer, html.three.scene, html.three.camera, html.three.controls );
 
+		//Optional. Add Raycasting
+		new Hover( html.three.renderer.domElement, html.three.scene, html.three.camera, dxf );
+
 		//get layer names
 		const layer_names = Object.keys( viewer.layers );
 
@@ -31,34 +34,22 @@ html.onLoad = async ( file ) => {
 
 		//add entities to layers
 		dxf.traverse( m => {
-			if( !m.userData ) return; 
+			if( !m.userData || !m.userData.entity ) return; 
 
-			let name = m.userData.layer;
+			let name = m.userData.entity.layer;
 			if( viewer.layers[ name ] ) viewer.layers[ name ].entities.push( m );
-
 		} );
 
-		//merge layer and add to scene
-		layer_names.forEach( name =>  { 
-			
-			const layer = viewer.layers[ name ];
-
-			if( layer.entities.length === 0 ) return;
-			
-			//merge layer
-			layer.entity = new Merger().merge( dxf, true, layer.entities.map( m => m.uuid ) );
-			layer.entity.dxfLayer = layer;
-
-			//add to scene
-			html.three.scene.add( layer.entity );
-		} );
+		html.three.scene.add( dxf );
 		html.three.centerCamera();
 		
 		//Optional - add layer visibility to gui
-		layer_names.forEach( name => gui.add( viewer.layers[ name ], 'visible' ).name( name ).onChange( ( value ) => {
-			let obj3d = html.three.scene.children.filter( c => c.dxfLayer.name === name )[0]; 
-			if( obj3d ) obj3d.visible = value;
-		} ) );
+		layer_names.forEach( name => {
+			const layer = viewer.layers[ name ];
+			gui.add( layer, 'visible' ).name( name ).onChange( ( value ) => {
+				layer.entities.forEach( e => e.visible = value );
+			} );
+		} );
 
 		//colorize gui layers options with layer color
 		document.querySelectorAll( '.controller' ).forEach( c => 
