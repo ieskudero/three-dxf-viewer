@@ -3,6 +3,7 @@ import { SnapsHelper } from '../../src/utils/snapsHelper.js';
 import { Boilerplate } from '../boilerplate.js';
 import GUI from 'lil-gui';
 import { Hover } from '../../src/utils/hover.js';
+import { Select } from '../../src/utils/select.js';
 
 //global variables
 const font = 'fonts/helvetiker_regular.typeface.json';
@@ -23,8 +24,11 @@ html.onLoad = async ( file ) => {
 		if( snaps ) snaps.clear();
 		snaps = new SnapsHelper( dxf, html.three.renderer, html.three.scene, html.three.camera, html.three.controls );
 
-		//Optional. Add Raycasting
-		new Hover( html.three.renderer.domElement, html.three.scene, html.three.camera, dxf );
+		//Optional. Add Hover
+		new Hover( html.three.renderer.domElement, html.three.camera, dxf );
+
+		//Optional. Add Selection
+		new Select( html.three.renderer.domElement, html.three.camera, dxf );
 
 		//get layer names
 		const layer_names = Object.keys( viewer.layers );
