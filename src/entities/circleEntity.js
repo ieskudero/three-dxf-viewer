@@ -28,7 +28,8 @@ export class CircleEntity extends BaseEntity {
 		if( entities.length === 0 ) return null;
 
 		let group = new Group();
-
+		group.name = 'CIRCLES';
+		
 		for( let i = 0; i < entities.length; i++ ) {
 			let entity = entities[i];
 

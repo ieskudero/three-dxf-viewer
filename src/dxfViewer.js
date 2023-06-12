@@ -89,7 +89,8 @@ export class DXFViewer {
 
 	async _drawDXF( data ) {
 		let group = new Group();
-
+		group.name = 'DXFViewer';
+		
 		//Change to false if we intent to modify the geometries. Otherwise the cached geometry will be modified too.
 		if( !this.useCache ) Properties.cache = false;
 
@@ -136,6 +137,7 @@ export class DXFViewer {
 	_toCache( path, data ) {
 		this._cache[this._replaceEspecialChars( path )] = data;
 	}
+
 	_fromCache( path ) {
 		let cached = this._cache[this._replaceEspecialChars( path )];
 		return cached ? cached : null;

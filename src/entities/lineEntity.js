@@ -22,7 +22,8 @@ export class LineEntity extends BaseEntity {
 	draw( data ) {
         
 		let group = new Group();
-
+		group.name = 'LINES';
+		
 		//get all lines
 		let entities = data.entities.filter( entity => entity.type === 'LINE' || entity.type === 'POLYLINE' || entity.type === 'LWPOLYLINE' );
 		if( entities.length === 0 ) return null;

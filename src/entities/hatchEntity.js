@@ -36,7 +36,8 @@ export class HatchEntity extends BaseEntity {
 	draw( data ) {
         
 		let group = new Group();
-
+		group.name = 'HATCHES';
+				
 		//get all hatchs
 		let entities = data.entities.filter( entity => entity.type === 'HATCH' );
 		if( entities.length === 0 ) return null;

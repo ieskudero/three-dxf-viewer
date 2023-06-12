@@ -33,7 +33,7 @@ export class BlockEntity extends BaseEntity {
 	drawBlock( entity ) {
         
 		let group = new Group();
-
+		group.name = 'BLOCK';
 		group.position.set( -entity.x, -entity.y, -entity.z );
 		group.userData = entity;
         
@@ -112,6 +112,7 @@ export class BlockEntity extends BaseEntity {
 				let block = _entity.blockObj ? _entity.blockObj : this._getBlock( this.data.blocks, _entity.block );
 				if( block && block.entities.length > 0 && !this._hideBlockEntity( block ) ) {
 					let obj3d = new Group();
+					obj3d.name = 'INSERT';
 					obj3d.add( this.drawBlock( block ) );
 					obj3d.userData = _entity;
 

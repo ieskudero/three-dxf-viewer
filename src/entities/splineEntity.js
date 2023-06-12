@@ -5,7 +5,6 @@ import { Group,
 	Line,
 	BufferAttribute } from 'three';
 import * as bSpline from 'dxf/lib/util/bSpline';
-
 /**
  * @class SplineEntity
  * @see {@link baseEntity/BaseEntity.md}
@@ -26,7 +25,8 @@ export class SplineEntity extends BaseEntity {
 		if( entities.length === 0 ) return null;
 
 		let group = new Group();
-
+		group.name = 'SPLINES';
+		
 		for( let i = 0; i < entities.length; i++ ) {
 			let entity = entities[i];
 

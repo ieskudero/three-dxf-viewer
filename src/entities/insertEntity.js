@@ -38,6 +38,7 @@ export class InsertEntity extends BaseEntity {
 		}
 
 		let result = new Group();
+		result.name = 'INSERTS';
 		for( let i = 0; i < entities.length; i++ ) {
 			let entity = entities[i];
 

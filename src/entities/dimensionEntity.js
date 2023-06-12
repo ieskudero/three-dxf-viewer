@@ -42,6 +42,7 @@ export class DimensionEntity extends BaseEntity {
 		}
 
 		let result = new Group();
+		result.name = 'DIMENSIONS';
 		for( let i = 0; i < entities.length; i++ ) {
 			let entity = entities[i];
 
@@ -49,6 +50,7 @@ export class DimensionEntity extends BaseEntity {
             
 			let dimGroup = new Group();
 			dimGroup.userData = entity;
+			dimGroup.name = 'BLOCK';
 			let block = this._blockEntity.drawBlock( entity.blockObj );
 			dimGroup.add( block );
 

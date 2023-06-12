@@ -30,7 +30,8 @@ export class TextEntity extends BaseEntity {
 		if( entities.length === 0 ) return null;
 
 		let group = new Group();
-
+		group.name = 'TEXTS';
+		
 		for ( let i = 0; i < entities.length; i++ ) {
 			let entity = entities[i];
 
