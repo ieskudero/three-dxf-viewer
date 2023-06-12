@@ -74,15 +74,15 @@ export class SplineEntity extends BaseEntity {
 
 		let material = this._colorHelper.getMaterial( entity, lineType, this.data.tables );
 		
-		var points = this._getBSplinePolyline( entity.controlPoints, entity.degree, entity.knots );
-		
+		var points = this._getBSplinePolyline( entity.controlPoints, entity.degree, entity.knots, entity.weights );
+
 		let geometry = new BufferGeometry().setFromPoints( points );
 		geometry.setIndex( new BufferAttribute( new Uint16Array( this._geometryHelper.generatePointIndex( points ) ), 1 ) );
             
 		return { geometry: geometry, material: material };
 	}
 
-	_getBSplinePolyline( controlPoints, degree, knots, interpolationsPerSplineSegment, weights = null ) {
+	_getBSplinePolyline( controlPoints, degree, knots, weights = null, interpolationsPerSplineSegment = 25 ) {
 		const polyline = [];
 		const controlPointsForLib = controlPoints.map( function ( p ) {
 			return [ p.x, p.y ];
@@ -97,7 +97,6 @@ export class SplineEntity extends BaseEntity {
 			}
 		}
 
-		interpolationsPerSplineSegment = interpolationsPerSplineSegment || 25;
 		for ( let i = 1; i < segmentTs.length; ++i ) {
 			const uMin = segmentTs[i - 1];
 			const uMax = segmentTs[i];
