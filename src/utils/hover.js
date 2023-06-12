@@ -1,70 +1,53 @@
-import { MeshBasicMaterial } from 'three';
-import { Raycasting } from './raycasting';
+import { Raycaster } from '../tools/raycaster';
 
-export class Hover {
-	constructor( container, scene, camera, dxf, raycasting = null ) {
+export class Hover extends Raycaster {
 
-		this.scene = scene;
-		this._initRaycasting( container, camera, dxf, raycasting );
+	constructor( container, camera, dxf, raycasting = null ) {
+
+		super();
+		this.container = container;
 		this._clonedObjects = {};
 
+		//init raycasting
+		this._initRaycasting( container, camera, dxf, raycasting );
+
 		//create orange hover material that will be seeen above all other materials
-		this._hoverMaterial = new MeshBasicMaterial( { depthTest: false, depthWrite: false } );
-		this._hoverMaterial.color.setHex( 0xffa500 );
-		this._hoverMaterial.color.convertSRGBToLinear();
-		this._hoverMaterial.color.convertSRGBToLinear();
+		this._setMaterial( 0xffa500 );
+		
+		this.container.addEventListener( 'pointermove', async( e ) => await this._onPointerMove( e ), false );
 	}
 
-	_initRaycasting( container, camera, dxf, raycasting ) {
-		const meshes = [];
-		dxf.traverse( m => {
-			if( m.geometry ) meshes.push( m );
-		} );
+	async _onPointerMove( event ) {
+		
+		event.preventDefault();
 
-		const rc = raycasting ? raycasting : new Raycasting( container, camera, meshes );
-		rc.subscribe( 'intersected', ( intersect ) => {
-			const obj = intersect.object.parent;
+		this.pointer.x = ( event.clientX / this.container.clientWidth ) * 2 - 1;
+		this.pointer.y = - ( event.clientY / this.container.clientHeight ) * 2 + 1;
+		
+		const intersected = this.raycast.raycast( this.pointer );
+
+		this._removeHover();
+		if( intersected )  {
+			const obj = intersected.object.parent;
 			if( !obj.userData ) return;
 
 			this._drawHover( obj );
-		} );
-		rc.subscribe( 'noIntersected', () => {
-			this._removeHover();
-		} );
+		}
 	}
 
 	_drawHover( obj ) {
 		
-		this._removeHover();
-
 		//clone first
 		if( !this._clonedObjects[ obj.uuid ] ) this._clonedObjects[ obj.uuid ] = { clone: this._clone( obj ), parent: obj.parent };
 		const cloneData = this._clonedObjects[ obj.uuid ];
 		cloneData.clone.hovered = true;
 		
 		//set material
-		cloneData.clone.traverse( c => { if ( c.material ) c.material = this._hoverMaterial; } );
+		cloneData.clone.traverse( c => { if ( c.material ) c.material = this._material; } );
 
 		this._hovered = cloneData.clone;
 
 		cloneData.parent.add( this._hovered );
-	}
-
-	_clone( obj ) {
-		const tree = {};
-		//pass all userDatas to tree
-		obj.traverse( c => { 
-			tree[ c.uuid ] = c.userData;
-			c.userData = null;
-		} );
-		const clone = obj.clone();
-
-		//restore userDatas
-		obj.traverse( c => {
-			c.userData = tree[ c.uuid ];
-		} );
-
-		return clone;
 	}
 
 	_removeHover() {
@@ -74,5 +57,4 @@ export class Hover {
 			this._hovered = null;
 		}
 	}
-
 }
