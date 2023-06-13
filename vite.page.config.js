@@ -13,7 +13,7 @@ function renderChunks( deps ) {
 
 export default defineConfig( {
 	root: './example/layer',
-	base: '/',
+	base: '',				//path to add to output files. For example, base: 'data/' will result in 'data/[name.js]' for  entryFileNames
 	build: {
 		outDir: './dist',
 		assetsDir: './dist',
@@ -44,7 +44,7 @@ export default defineConfig( {
 		viteStaticCopy( {
 			targets: [
 				{
-					src: '../fonts/helvetiker_regular.typeface.json',	//RELATIVE TO ROOT
+					src: '../fonts/helvetiker_regular.typeface.json',	//relative to root
 					dest: 'fonts'
 				}
 			]
