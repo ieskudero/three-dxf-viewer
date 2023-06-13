@@ -1,13 +1,14 @@
 # source code
 src
 resources
-dxfViewer.js
+main.js
 jsdoc.js
 example
 
 # compiler
-webpack.config.js
-webpack.dev.config.js
+vite.dev.config.js
+vite.prod.config.js
+vite.page.config.js
 package-lock.json
 node_modules 
 

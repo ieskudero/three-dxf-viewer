@@ -5,6 +5,8 @@ import GUI from 'lil-gui';
 import { Hover } from '../../src/utils/hover.js';
 import { Select } from '../../src/utils/select.js';
 
+import './index.css';
+
 //global variables
 const font = 'fonts/helvetiker_regular.typeface.json';
 let viewer = new DXFViewer();

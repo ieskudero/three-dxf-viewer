@@ -7,6 +7,8 @@
 import { DXFViewer } from './src/dxfViewer';
 import { Merger } from './src/utils/merger';
 import { SnapsHelper } from './src/utils/snapsHelper';
+import { Hover } from './src/utils/hover';
+import { Select } from './src/utils/select';
 
 /**
  * @property {class} DXFViewer Main viewer object
@@ -16,5 +18,7 @@ import { SnapsHelper } from './src/utils/snapsHelper';
 export {
 	DXFViewer,
 	Merger,
-	SnapsHelper
+	SnapsHelper,
+	Hover,
+	Select
 };
