@@ -2,8 +2,8 @@
     "name": "three-dxf-viewer",
     "version": "1.0.15",
     "description": "DXF viewer using ThreeJS",
-    "main": "./dist/three-dxf-viewer.mjs",
-	"module": "./dist/three-dxf-viewer.umd.js",
+    "main": "main.js",
+	"module": "main.js",
 	"files": [ "dist" ],
     "scripts": {
 		"dev": "vite -c vite.dev.config.js",
