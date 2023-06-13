@@ -6,7 +6,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig( {
 	root: './example/layer',
-	base: '/',
+	base: '',
 	server: {
 		port: 9009,
 		open: true,
