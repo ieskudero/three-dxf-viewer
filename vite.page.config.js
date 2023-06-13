@@ -20,7 +20,7 @@ export default defineConfig( {
 		sourcemap: false,
 		rollupOptions: {
 			output: {
-				dir: 'dist',
+				dir: './dist',
 				entryFileNames: '[name].js',
 				assetFileNames: '[name].css',
 				chunkFileNames: '[name].js',
@@ -45,9 +45,10 @@ export default defineConfig( {
 			targets: [
 				{
 					src: '../fonts/helvetiker_regular.typeface.json',	//relative to root
-					dest: 'fonts'
+					dest: '../../../dist/fonts'
 				}
-			]
+			],
+			silent: false
 		} )
 	]
 } );
