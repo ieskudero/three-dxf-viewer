@@ -34,15 +34,17 @@ scene.addDXF( dxf );
 
 ```
 
+More examples can be found in the example folder on github.
+
 ## Utilities
 
-There are 2 utilities that can be used optionally with the viewer:
+There are 4 utilities that can be used optionally with the viewer:
 
 ### Merger
-Merger class can merge all entities to optimize drawing big DXF files.
+By default the viewer will merge Block entities. however, it is possible to merge all entities to optimize drawing big DXF files.
 
 ```js
-import { Merger } from 'three-dxf-viewer';
+import { Merger, DXFViewer } from 'three-dxf-viewer';
 
 let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
 
@@ -52,6 +54,33 @@ scene.add( mergedObject );
 
 ```
 
+### Selection
+The select class can be used to select entities in the scene. It will highlight the selected entity. Selection can be done by clicking on the entity or pressing Ctrl and using the selection box.
+
+```js
+import { Select, DXFViewer } from 'three-dxf-viewer';
+
+let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
+
+new Select( three.renderer.domElement, three.camera, dxf );
+
+scene.add( dxf );
+
+```
+
+### Hover
+The hover class will highlight the hovered entity by the mouse.
+
+```js
+import { Hover, DXFViewer } from 'three-dxf-viewer';
+
+let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
+
+new Hover( three.renderer.domElement, three.camera, dxf );
+
+scene.add( dxf );
+
+```
 
 ### Snaps
 Snaps classes can store all the vertices in an efficient way. This allows to get the closest vertex to a point in the scene. This is useful for example to snap to the nearest vertex when drawing lines.
@@ -68,9 +97,10 @@ let snaps = new SnapsHelper( dxf, renderer, scene, camera, controls );
 
 ## Development
 
-For a more detailed explanation, there is an example on how to use the viewer on the source code in /example/index.js. Download it from github an launch it with:
+For a more detailed explanation, there is an example folder on how to use the viewer. Download it from github an launch it with:
 
 ```js
+npm install
 npm run dev
 ```
-The application will be available on http://localhost:8080
+The application will be available on http://localhost:9009
