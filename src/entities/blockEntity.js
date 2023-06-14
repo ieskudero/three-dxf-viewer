@@ -183,24 +183,32 @@ export class BlockEntity extends BaseEntity {
 	_mergeGroup( group ) {
 		
 		const merger = new Merger();
+
+		const mergeAvoid = ( c ) => c.name === 'BLOCK' || c.name === 'INSERT' || c.name === 'DIMENSION';
+
 		// BLOCK
-		const blocks = group.children.filter( c => c.name === 'BLOCK' || c.name === 'INSERT' );
-		const noBlocks = group.children.filter( c => c.name !== 'BLOCK' && c.name !== 'INSERT' );
+		const blocks = [];
+		const joinables = [];
+		
+		for( let i = 0; i < group.children.length; i++ ) {
+			const c = group.children[ i ];
+			mergeAvoid( c ) ? blocks.push( c ) : joinables.push( c );
+		}
 
 		//remove blocks from children
-		blocks.forEach( b => group.remove( b ) );
+		for( let i = 0; i < blocks.length; i++ ) group.remove( blocks[ i ] );
 
 		//merge all the rest
-		if( noBlocks.length > 0 ) {
+		if( joinables.length > 0 ) {
 
 			//store in userData all the entities
 			group.userData.entities = [];
-			noBlocks.forEach( c => group.userData.entities.push( c ) );
+			joinables.forEach( c => group.userData.entities.push( c ) );
 
 			merger.merge( group );
 		} 
 
 		//add blocks again
-		blocks.forEach( b => group.add( b ) );
+		for( let i = 0; i < blocks.length; i++ ) group.add( blocks[ i ] );
 	}
 }
