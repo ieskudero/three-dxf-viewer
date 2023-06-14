@@ -69,7 +69,7 @@ export class InsertEntity extends BaseEntity {
 		let group = null;
 		if( block && !this._blockEntity._hideBlockEntity( block ) ) {
 			group = new Group();
-			group.name = 'BLOCK';
+			group.name = 'INSERT';
 			group.userData = { entity: entity };
 			group.add( this._blockEntity.drawBlock( block ) );
 
