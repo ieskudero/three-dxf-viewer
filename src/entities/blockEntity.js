@@ -52,7 +52,7 @@ export class BlockEntity extends BaseEntity {
 
 				let obj3d = new Line( _drawData.geometry, _drawData.material );
 				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
-				obj3d.userData = group.userData = { entity: _entity };
+				obj3d.userData = { entity: _entity };
 
 				group.add( obj3d );
 			} break;
