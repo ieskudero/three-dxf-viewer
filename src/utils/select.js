@@ -32,9 +32,14 @@ export class Select extends Raycaster {
 
 		//if control is pushed start selection box
 		if( event.ctrlKey && event.button !== 2 ) {
+			
+			var rect = event.target.getBoundingClientRect();
+			const x = event.clientX - rect.left;
+			const y = event.clientY - rect.top;
+			
 			this._onSelectionBox = {
-				start: { x: event.clientX, y: event.clientY },
-				end: { x: event.clientX, y: event.clientY }
+				start: { x: x, y: y },
+				end: { x: x, y: y }
 			};
 			return;
 		}
@@ -57,9 +62,13 @@ export class Select extends Raycaster {
 			if( objs ) ss = objs;
 		} else {
 
+			var rect = event.target.getBoundingClientRect();
+			const x = event.clientX - rect.left;
+			const y = event.clientY - rect.top;
+			
 			//SELECT BY RAYCASTING		
-			this.pointer.x = ( event.clientX / this.container.clientWidth ) * 2 - 1;
-			this.pointer.y = - ( event.clientY / this.container.clientHeight ) * 2 + 1;
+			this.pointer.x = ( x / this.container.clientWidth ) * 2 - 1;
+			this.pointer.y = - ( y / this.container.clientHeight ) * 2 + 1;
 			
 			const intersected = await this.raycast.raycast( this.pointer );
 			if( intersected )  ss = intersected.object.parent;
@@ -74,14 +83,20 @@ export class Select extends Raycaster {
 
 	async _onPointerMove( event ) {
 		if( this._onSelectionBox ) {
-			this._onSelectionBox.end = { x: event.clientX, y: event.clientY };
-			this.drawSelectionBox( this._onSelectionBox.start, this._onSelectionBox.end );
+			var rect = event.target.getBoundingClientRect();
+			const x = event.clientX - rect.left;
+			const y = event.clientY - rect.top;
+
+			this._onSelectionBox.end = { x: x, y: y };
+			this.drawSelectionBox( this._onSelectionBox.start, this._onSelectionBox.end, rect );
 			return;
 		}
 	}
 
-	drawSelectionBox( start, end ) {
+	drawSelectionBox( start, end, rect ) {
 		this._removeSelectionBox();
+
+
 
 		const width = Math.max( start.x, end.x ) - Math.min( start.x, end.x );
 		const height = Math.max( start.y, end.y ) - Math.min( start.y, end.y );
@@ -90,8 +105,8 @@ export class Select extends Raycaster {
 		//STYLE
 		this._selectionBox.style.position = 'absolute';
 		this._selectionBox.style.border = '1px solid white';
-		this._selectionBox.style.left = Math.min( start.x, end.x ) + 'px';
-		this._selectionBox.style.top = Math.min( start.y, end.y ) + 'px';
+		this._selectionBox.style.left = Math.min( start.x, end.x ) + rect.left + 'px';
+		this._selectionBox.style.top = Math.min( start.y, end.y ) + rect.top + 'px';
 		this._selectionBox.style.width = width + 'px';
 		this._selectionBox.style.height = height + 'px';
 		this._selectionBox.style.pointerEvents = 'none'; this._selectionBox.style.background= 'blue';

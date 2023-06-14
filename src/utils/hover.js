@@ -21,8 +21,12 @@ export class Hover extends Raycaster {
 		
 		event.preventDefault();
 
-		this.pointer.x = ( event.clientX / this.container.clientWidth ) * 2 - 1;
-		this.pointer.y = - ( event.clientY / this.container.clientHeight ) * 2 + 1;
+		var rect = event.target.getBoundingClientRect();
+		const x = event.clientX - rect.left; //x position within the element.
+		const y = event.clientY - rect.top;  //y position within the element.
+		
+		this.pointer.x = ( x / this.container.clientWidth ) * 2 - 1;
+		this.pointer.y = - ( y / this.container.clientHeight ) * 2 + 1;
 		
 		const intersected = this.raycast.raycast( this.pointer );
 
