@@ -23,6 +23,9 @@ export class Select extends Raycaster {
 			boxMax : new Vector3(),
 		};
 		
+		this._isMouseDown = false;
+		this._isMouseMoving = false;
+
 		this.container.addEventListener( 'pointerdown', async( e ) => await this._onPointerDown( e ), false );
 		this.container.addEventListener( 'pointerup', async( e ) => await this._onPointerUp( e ), false );
 		this.container.addEventListener( 'pointermove', async( e ) => await this._onPointerMove( e ), false );
@@ -30,28 +33,36 @@ export class Select extends Raycaster {
 
 	async _onPointerDown( event ) {
 
-		//if control is pushed start selection box
-		if( event.ctrlKey && event.button !== 2 ) {
+		//if mouse left button
+		if( event.button === 0 ) {
 			
-			var rect = event.target.getBoundingClientRect();
-			const x = event.clientX - rect.left;
-			const y = event.clientY - rect.top;
-			
-			this._onSelectionBox = {
-				start: { x: x, y: y },
-				end: { x: x, y: y }
-			};
-			return;
+			this._isMouseDown = true;
+
+			//if control is pushed start selection box
+			if( event.ctrlKey ) {
+				var rect = event.target.getBoundingClientRect();
+				const x = event.clientX - rect.left;
+				const y = event.clientY - rect.top;
+				
+				this._onSelectionBox = {
+					start: { x: x, y: y },
+					end: { x: x, y: y }
+				};
+			}
 		}
 	}
 
 	async _onPointerUp( event ) {
-		//if mouse right button return
-		if( event.button === 2 ) return;
-		if( this._moving ) { this._moving = false; return; }
+		
+		this._isMouseDown = false;
+		if( this._isMouseMoving ) { this._isMouseMoving = false; return; }
+
+		//if not mouse left button, return
+		if( event.button !== 0 ) return;
 
 		event.preventDefault();
 
+		//deselect all
 		this.deselectAll();
 
 
@@ -85,6 +96,7 @@ export class Select extends Raycaster {
 	}
 
 	async _onPointerMove( event ) {
+
 		if( this._onSelectionBox ) {
 			var rect = event.target.getBoundingClientRect();
 			const x = event.clientX - rect.left;
@@ -93,6 +105,8 @@ export class Select extends Raycaster {
 			this._onSelectionBox.end = { x: x, y: y };
 			this.drawSelectionBox( this._onSelectionBox.start, this._onSelectionBox.end, rect );
 			return;
+		} else if( this._isMouseDown ) {
+			this._isMouseMoving = true;
 		}
 	}
 
