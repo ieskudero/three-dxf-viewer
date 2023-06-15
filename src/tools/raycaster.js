@@ -1,7 +1,12 @@
 import { MeshBasicMaterial, Vector2 } from 'three';
 import { Raycasting } from './raycasting';
+import { EventEmitter } from './eventEmitter';
 
-export class Raycaster {
+export class Raycaster extends EventEmitter {
+
+	constructor() {
+		super();
+	}
 
 	_initRaycasting( container, camera, dxf, raycasting ) {
 

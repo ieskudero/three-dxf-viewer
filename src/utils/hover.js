@@ -36,6 +36,7 @@ export class Hover extends Raycaster {
 			if( !obj.userData ) return;
 
 			this.hover( obj );			
+			await this.trigger( 'hover', obj );
 		}
 	}
 

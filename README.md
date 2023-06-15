@@ -1,6 +1,10 @@
 # DXF Viewer
 
-DXF viewer made using [dxf parser](https://github.com/skymakerolof/dxf) and [threejs](https://github.com/mrdoob/three.js/). It generates a threejs object that can be used in any scene. It also has some utility classes such as a merger and a snap helper.
+DXF viewer made using [dxf parser](https://github.com/skymakerolof/dxf) and [threejs](https://github.com/mrdoob/three.js/). It generates a threejs object that can be used in any scene. It also has some utility classes:
+* Select
+* Hover
+* Snap
+* Merger
 
 ### Try Online
 
@@ -62,7 +66,8 @@ import { Select, DXFViewer } from 'three-dxf-viewer';
 
 let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
 
-new Select( three.renderer.domElement, three.camera, dxf );
+const select = new Select( three.renderer.domElement, three.camera, dxf );
+select.subscribe( 'select', ( selects ) => console.log( 'Selected entities', selects ) );
 
 scene.add( dxf );
 
@@ -76,7 +81,8 @@ import { Hover, DXFViewer } from 'three-dxf-viewer';
 
 let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
 
-new Hover( three.renderer.domElement, three.camera, dxf );
+const hover = new Hover( three.renderer.domElement, three.camera, dxf );
+hover.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered ) );
 
 scene.add( dxf );
 

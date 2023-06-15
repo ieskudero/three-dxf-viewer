@@ -76,6 +76,7 @@ export class Select extends Raycaster {
 
 		if( ss ) {
 			this.select( ss );
+			await this.trigger( 'select', ss );
 		}
 
 		//CLEAN UP
