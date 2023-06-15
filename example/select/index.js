@@ -14,7 +14,8 @@ html.onLoad = async ( file ) => {
 	let dxf = await viewer.getFromFile( file, font );
 	if( dxf ) {
 		
-		new Select( html.three.renderer.domElement, html.three.camera, dxf );
+		const select = new Select( html.three.renderer.domElement, html.three.camera, dxf );
+		select.subscribe( 'select', ( selects ) => console.log( 'Selected entities', selects ) );
 
 		html.three.scene.add( dxf );
 		html.three.centerCamera();

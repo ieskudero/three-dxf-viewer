@@ -14,7 +14,8 @@ html.onLoad = async ( file ) => {
 	let dxf = await viewer.getFromFile( file, font );
 	if( dxf ) {
 		
-		new Hover( html.three.renderer.domElement, html.three.camera, dxf );
+		const hover = new Hover( html.three.renderer.domElement, html.three.camera, dxf );
+		hover.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered ) );
 
 		html.three.scene.add( dxf );
 		html.three.centerCamera();
