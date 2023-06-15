@@ -52,7 +52,7 @@ export class Select extends Raycaster {
 
 		event.preventDefault();
 
-		this._deselectAll();
+		this.deselectAll();
 
 
 		//TRY TO SELECT USING SELECTION BOX
@@ -74,7 +74,9 @@ export class Select extends Raycaster {
 			if( intersected )  ss = intersected.object.parent;
 		}
 
-		if( ss ) this._select( ss );
+		if( ss ) {
+			this.select( ss );
+		}
 
 		//CLEAN UP
 		this._removeSelectionBox();
@@ -176,7 +178,7 @@ export class Select extends Raycaster {
 	}
 
 
-	_select( obj ) {
+	select( obj ) {
 		const objs = obj instanceof Array ? obj : [ obj ];
 		objs.forEach( o => {
 			const clone = this._clone( o );
@@ -186,7 +188,7 @@ export class Select extends Raycaster {
 		} );
 	}
 
-	_deselectAll() {
+	deselectAll() {
 		if( this.selecteds ) {
 			this.selecteds.forEach( s => s.parent.remove( s ) );
 			this.selecteds.length = 0;

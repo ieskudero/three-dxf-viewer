@@ -30,16 +30,16 @@ export class Hover extends Raycaster {
 		
 		const intersected = this.raycast.raycast( this.pointer );
 
-		this._removeHover();
+		this.removeHover();
 		if( intersected )  {
 			const obj = intersected.object.parent;
 			if( !obj.userData ) return;
 
-			this._drawHover( obj );
+			this.hover( obj );			
 		}
 	}
 
-	_drawHover( obj ) {
+	hover( obj ) {
 		
 		//clone first
 		if( !this._clonedObjects[ obj.uuid ] ) this._clonedObjects[ obj.uuid ] = { clone: this._clone( obj ), parent: obj.parent };
@@ -54,7 +54,7 @@ export class Hover extends Raycaster {
 		cloneData.parent.add( this._hovered );
 	}
 
-	_removeHover() {
+	removeHover() {
 		//remove previous hover
 		if( this._hovered && this._hovered.parent ) { 
 			this._hovered.parent.remove( this._hovered ); 
