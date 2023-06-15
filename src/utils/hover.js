@@ -40,7 +40,7 @@ export class Hover extends Raycaster {
 		}
 	}
 
-	hover( obj ) {
+	hover( obj, material = null ) {
 		
 		//clone first
 		if( !this._clonedObjects[ obj.uuid ] ) this._clonedObjects[ obj.uuid ] = { clone: this._clone( obj ), parent: obj.parent };
@@ -48,7 +48,7 @@ export class Hover extends Raycaster {
 		cloneData.clone.hovered = true;
 		
 		//set material
-		cloneData.clone.traverse( c => { if ( c.material ) c.material = this._material; } );
+		cloneData.clone.traverse( c => { if ( c.material ) c.material = material ? material : this._material; } );
 
 		this._hovered = cloneData.clone;
 

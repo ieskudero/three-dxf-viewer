@@ -193,11 +193,12 @@ export class Select extends Raycaster {
 	}
 
 
-	select( obj ) {
+	select( obj, material = null ) {
 		const objs = obj instanceof Array ? obj : [ obj ];
 		objs.forEach( o => {
 			const clone = this._clone( o );
-			clone.traverse( c => { if ( c.material ) c.material = this._material; } );
+			clone.selected = true;
+			clone.traverse( c => { if ( c.material ) c.material = material ? material : this._material; } );
 			o.parent.add( clone );
 			this.selecteds.push( clone );
 		} );
