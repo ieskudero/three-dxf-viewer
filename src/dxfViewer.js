@@ -13,6 +13,7 @@ import { HatchEntity } from './entities/hatchEntity';
 import * as Helper from 'dxf/src/Helper';
 import { Properties } from './entities/baseEntity/properties';
 import { LayerHelper } from './entities/baseEntity/layerHelper.js';
+import { ColorHelper } from './entities/baseEntity/colorHelper.js';
 
 /**
  * @class DXFViewer
@@ -28,6 +29,9 @@ export class DXFViewer {
 		this.useCache = true;
 
 		this.onBeforeTextChanged = null;
+
+		this.colorHelper = new ColorHelper();
+		this.LayerHelper = new LayerHelper();
 	}    
 
 	/**
@@ -77,7 +81,7 @@ export class DXFViewer {
 			this._lastDXF = data;
 
 			//parse layers
-			data.tables.layers = new LayerHelper().parse( data.tables.layers );
+			data.tables.layers = this.LayerHelper.parse( data.tables.layers );
 
 			//export layers
 			this.layers = data.tables.layers;
