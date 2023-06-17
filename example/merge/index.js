@@ -3,6 +3,8 @@ import { Merger } from '../../src/utils/merger.js';
 import { SnapsHelper } from '../../src/utils/snapsHelper';
 import { Boilerplate } from '../boilerplate.js';
 
+import './index.css';
+
 //global variables
 const font = 'fonts/helvetiker_regular.typeface.json';
 let snaps;

@@ -1,6 +1,8 @@
 import { DXFViewer } from '../../src/dxfViewer.js';
 import { Boilerplate } from '../boilerplate.js';
 
+import './index.css';
+
 //global variables
 const font = 'fonts/helvetiker_regular.typeface.json';
 
