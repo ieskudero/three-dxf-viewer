@@ -88,7 +88,7 @@ export class HatchEntity extends BaseEntity {
 		let material = null;
 
 		//CONVERT ENTITIES TO POINTS
-		this._getBoundaryPoints( entity.boundary );
+		this._getBoundaryPoints( entity );
 
 		if( entity.fillType === 'SOLID' ) {
             
@@ -117,7 +117,8 @@ export class HatchEntity extends BaseEntity {
 		return { geometry: geometry, material: material };		
 	}
 
-	_getBoundaryPoints( boundary ) {
+	_getBoundaryPoints( entity ) {
+		const boundary = entity.boundary;
 		for ( let i = 0; i < boundary.count; i++ ) {
 			const loop = boundary.loops[i];
 			for ( let j = 0; j < loop.entities.length; j++ ) {
@@ -127,7 +128,7 @@ export class HatchEntity extends BaseEntity {
 				switch ( ent.type ) {
 				case 'LINE' : { this._getLinePoints( ent ); } break;
 				case 'POLYLINE': { this._getPolyLinePoints( ent ); } break;
-				case 'ARC' : { this._getArcPoints( ent ); } break;
+				case 'ARC' : { this._getArcPoints( ent, entity ); } break;
 				case 'ELLIPSE' : { this._getEllipsePoints( ent ); } break;
 				case 'SPLINE' : { this._getSplinePoints( ent ); } break;
 				}
@@ -162,12 +163,19 @@ export class HatchEntity extends BaseEntity {
 		//DO NOTHING, POINTS ARE ALREADY ON ENTITY.POINTS
 	}
 
-	_getArcPoints( entity ){
+	_getArcPoints( entity, hatch ){
 		entity.points = [];
 
 		//get all in radians
 		let start = entity.startAngle * Math.PI / 180.0;
 		let end = entity.endAngle * Math.PI / 180.0;
+
+		//sweep if necessary
+		if ( !entity.counterClockWise && hatch.extrusionDir.z > 0 ) {
+			const temp = -start;
+			start = -end;
+			end = temp;
+		}
 
 		let curve = new ArcCurve(
 			entity.center.x, entity.center.y,
