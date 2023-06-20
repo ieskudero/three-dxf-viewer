@@ -64,7 +64,7 @@ export class LineEntity extends BaseEntity {
 	 * @param entity {entity} dxf parsed line entity.
      * @return {Object} object composed as {geometry: THREE.Geometry, material: THREE.Material}
 	*/
-	drawLine( entity ) {
+	drawLine( entity, extrusionZ = 1 ) {
         
 		let lineType = 'line';
         
@@ -76,8 +76,8 @@ export class LineEntity extends BaseEntity {
 		let material = this._colorHelper.getMaterial( entity, lineType, this.data.tables );
 
 		let geometry = new BufferGeometry().setFromPoints( [
-			new Vector3( entity.start.x, entity.start.y, entity.start.z ),
-			new Vector3( entity.end.x, entity.end.y, entity.end.z ),
+			new Vector3( extrusionZ * entity.start.x, entity.start.y, entity.start.z ),
+			new Vector3( extrusionZ * entity.end.x, entity.end.y, entity.end.z ),
 		] );
 		geometry.setIndex( new BufferAttribute( new Uint16Array( [ 0, 1 ] ), 1 ) );
     
@@ -90,7 +90,7 @@ export class LineEntity extends BaseEntity {
 	 * @param entity {entity} dxf parsed polyline or lwpolyline entity.
      * @return {Object} object composed as {geometry: THREE.Geometry, material: THREE.Material}
 	*/
-	drawPolyLine( entity ) {
+	drawPolyLine( entity, extrusionZ = 1 ) {
         
 		let lineType = 'line';
         
@@ -108,7 +108,7 @@ export class LineEntity extends BaseEntity {
 		return { geometry: geometry, material: material };
 	}
 
-	_getPolyLinePoints( vertices, closed ) {
+	_getPolyLinePoints( vertices, closed, extrusionZ = 1 ) {
 
 		let points = [];
 		for ( let i = 0, il = vertices.length; i < il - 1; ++i ) {
@@ -123,7 +123,7 @@ export class LineEntity extends BaseEntity {
 			if ( bulge ) {
 				let arcPoints = createArcoFromPolyline.default( [ from.x, from.y ], [ to.x, to.y ], bulge );
 				for ( let j = 0, jl = arcPoints.length; j < jl; ++j ) {
-					points.push( new Vector3( arcPoints[j][0], arcPoints[j][1], 0 ) );
+					points.push( new Vector3( extrusionZ * arcPoints[j][0], arcPoints[j][1], 0 ) );
 				}
 			}
     

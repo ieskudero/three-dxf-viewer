@@ -31,7 +31,7 @@ export class BlockEntity extends BaseEntity {
 	 * @param entity {Entity} DXF block entity.
      * @return {THREE.Group} ThreeJS object with all the generated geometry. DXF entity is added into userData
 	*/
-	drawBlock( entity ) {
+	drawBlock( entity, extrusionZ = 1 ) {
         
 		let group = new Group();
 		group.name = 'BLOCK';
@@ -48,7 +48,7 @@ export class BlockEntity extends BaseEntity {
             
 			switch ( _entity.type ) {
 			case 'LINE': {
-				let _drawData = this._lineEntity.drawLine( _entity );
+				let _drawData = this._lineEntity.drawLine( _entity, extrusionZ );
 
 				let obj3d = new Line( _drawData.geometry, _drawData.material );
 				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
@@ -58,7 +58,7 @@ export class BlockEntity extends BaseEntity {
 			} break;
 			case 'POLYLINE':
 			case 'LWPOLYLINE': {
-				let _drawData = this._lineEntity.drawPolyLine( _entity );
+				let _drawData = this._lineEntity.drawPolyLine( _entity, extrusionZ );
 
 				let obj3d = new Line( _drawData.geometry, _drawData.material );
 				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
@@ -68,7 +68,7 @@ export class BlockEntity extends BaseEntity {
 			} break;
 			case 'ARC':
 			case 'CIRCLE':  {
-				let _enti_drawDatay = this._circleEntity.drawCircle( _entity );
+				let _enti_drawDatay = this._circleEntity.drawCircle( _entity, extrusionZ );
 
 				let obj3d = new Line( _enti_drawDatay.geometry, _enti_drawDatay.material );
 				if( _enti_drawDatay.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
@@ -77,7 +77,7 @@ export class BlockEntity extends BaseEntity {
 				group.add( obj3d );
 			} break;
 			case 'ELLIPSE': {
-				let _drawData = this._circleEntity.drawEllipse( _entity );
+				let _drawData = this._circleEntity.drawEllipse( _entity, extrusionZ );
 
 				let obj3d = new Line( _drawData.geometry, _drawData.material );
 				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
@@ -86,7 +86,7 @@ export class BlockEntity extends BaseEntity {
 				group.add( obj3d );
 			} break;
 			case 'SPLINE': {
-				let _drawData = this._splineEntity.drawSpline( _entity );
+				let _drawData = this._splineEntity.drawSpline( _entity, extrusionZ );
 
 				let obj3d = new Line( _drawData.geometry, _drawData.material );
 				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
@@ -95,7 +95,7 @@ export class BlockEntity extends BaseEntity {
 				group.add( obj3d );
 			} break;
 			case 'SOLID': {
-				let _drawData = this._solidEntity.drawSolid( _entity );
+				let _drawData = this._solidEntity.drawSolid( _entity, extrusionZ );
 
 				let obj3d = new Mesh( _drawData.geometry, _drawData.material );
 				obj3d.userData = { entity: _entity };
@@ -105,7 +105,7 @@ export class BlockEntity extends BaseEntity {
 			case 'ATTRIB':
 			case 'TEXT':
 			case 'MTEXT': {
-				let _drawData = this._textEntity.drawText( _entity );
+				let _drawData = this._textEntity.drawText( _entity, extrusionZ );
 
 				let obj3d = new Mesh( _drawData.geometry, _drawData.material );
 				obj3d.userData = { entity: _entity };
@@ -117,7 +117,7 @@ export class BlockEntity extends BaseEntity {
 				if( block && block.entities.length > 0 && !this._hideBlockEntity( block ) ) {
 					let obj3d = new Group();
 					obj3d.name = 'INSERT';
-					obj3d.add( this.drawBlock( block ) );
+					obj3d.add( this.drawBlock( block, extrusionZ ) );
 					obj3d.userData = { entity: _entity };
 
 					let sx = _entity.scaleX ? _entity.scaleX : 1;
@@ -136,7 +136,7 @@ export class BlockEntity extends BaseEntity {
 				}
 			} break;
 			case 'HATCH': {
-				let _drawData = this._hatchEntity.drawHatch( _entity );
+				let _drawData = this._hatchEntity.drawHatch( _entity, extrusionZ );
 
 				if( _drawData.geometry ) {
 					let obj3d = _entity.fillType === 'SOLID' ? new Mesh( _drawData.geometry, _drawData.material ) : new LineSegments( _drawData.geometry, _drawData.material );

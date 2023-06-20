@@ -71,15 +71,17 @@ export class InsertEntity extends BaseEntity {
 			group = new Group();
 			group.name = 'INSERT';
 			group.userData = { entity: entity };
-			group.add( this._blockEntity.drawBlock( block ) );
+
+			const extrusionZ = entity.extrusionZ < 0 ? -1 : 1;
+			group.add( this._blockEntity.drawBlock( block, extrusionZ ) );
 
 			group.scale.set( sx, sy, sz );
 
 			if ( entity.rotation ) {
-				group.rotation.z = entity.rotation * Math.PI / 180;
+				group.rotation.z =  extrusionZ * ( entity.rotation * Math.PI / 180.0 );
 			}
 			
-			group.position.set( entity.x, entity.y, entity.z );
+			group.position.set( extrusionZ * entity.x, entity.y, entity.z );
 		}
 
 		this._setCache( entity, group );
