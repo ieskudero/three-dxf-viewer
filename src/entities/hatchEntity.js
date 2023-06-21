@@ -1,5 +1,6 @@
 import { BaseEntity } from './baseEntity/baseEntity';
 import { LineEntity } from './lineEntity';
+import { SplineEntity } from './splineEntity';
 
 import { Vector3, 
 	Group,
@@ -24,6 +25,7 @@ export class HatchEntity extends BaseEntity {
 		super( data );
 		this._font = font;
 		this._lineEntity = new LineEntity( data );
+		this._splineEntity = new SplineEntity( data );
 		this._patternHelper = {
 			dir: new Vector3( 0,1,0 ),
 		};
@@ -236,9 +238,12 @@ export class HatchEntity extends BaseEntity {
 	}
     
 	_getSplinePoints( entity ){
-		entity.points = [];
-		//TODO:
-		console.log( 'spline arc hatch not done!!' );
+		entity.points = this._splineEntity.getBSplinePolyline( 
+			entity.controlPoints.points,
+			entity.degree,
+			entity.knots.knots,
+			entity.weights
+		);
 	}
 
 	_generateBoundary( boundary, addIndex = false ) {
