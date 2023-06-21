@@ -90,7 +90,7 @@ export class LineEntity extends BaseEntity {
 	 * @param entity {entity} dxf parsed polyline or lwpolyline entity.
      * @return {Object} object composed as {geometry: THREE.Geometry, material: THREE.Material}
 	*/
-	drawPolyLine( entity, extrusionZ = 1 ) {
+	drawPolyLine( entity ) {
         
 		let lineType = 'line';
         
