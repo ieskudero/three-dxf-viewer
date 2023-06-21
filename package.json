@@ -28,7 +28,7 @@
 		"vite-plugin-html": "3.2.0",
 		"vite-plugin-static-copy":"0.16.0",		
         "jsdoc-to-markdown": "8.0.0",
-        "eslint": "8.42.0",
+        "eslint": "8.43.0",
         "eslint-config-recommended": "4.1.0",
 		"eslint-plugin-import": "2.27.5",
 		"lil-gui": "0.18.2"
