@@ -1,6 +1,5 @@
 import { BaseEntity } from './baseEntity/baseEntity';
 import { LineEntity } from './lineEntity';
-import alphamap from '../../resources/patternAlpha.jpg' ;
 
 import { Vector3, 
 	Group,
@@ -10,11 +9,10 @@ import { Vector3,
 	BufferAttribute,
 	ArcCurve,
 	EllipseCurve,
-	MeshBasicMaterial,
 	BufferGeometry,
-	TextureLoader,
-	RepeatWrapping } from 'three';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+	MeshBasicMaterial, 
+	Box3 } from 'three';
 
 /**
  * @class HatchEntity
@@ -26,6 +24,9 @@ export class HatchEntity extends BaseEntity {
 		super( data );
 		this._font = font;
 		this._lineEntity = new LineEntity( data );
+		this._patternHelper = {
+			dir: new Vector3( 0,1,0 ),
+		};
 	}
 
 	/**
@@ -89,18 +90,16 @@ export class HatchEntity extends BaseEntity {
 
 		//CONVERT ENTITIES TO POINTS
 		this._getBoundaryPoints( entity );
+		geometry = this._generateBoundary( entity );
 
 		if( entity.fillType === 'SOLID' ) {
             
-			geometry = this._generateBoundary( entity.boundary );
 			material = this._colorHelper.getMaterial( entity, 'shape', this.data.tables );
 		}
 		else if( entity.fillType === 'PATTERN' ) {
 
-			geometry = this._generateBoundary( entity.boundary );
-			material = this._getPatternMaterial();
+			material = this._getPatternMaterial( entity );
 			/*
-            geometry = this._generateBoundary( entity.boundary, true );
         
             let lineType = 'line';
             
@@ -136,19 +135,48 @@ export class HatchEntity extends BaseEntity {
 		}
 	}
 
-	_getPatternMaterial() {
+	_getPatternMaterial( entity ) {
 
 		if( this.__cachedPatternMaterial ) return this.__cachedPatternMaterial;
 
-		const texture = new TextureLoader().load( alphamap );
-		texture.wrapS = RepeatWrapping;
-		texture.wrapT = RepeatWrapping;
-		texture.repeat.set( 0.1, 0.1 );
-		texture.anisotropy = 16;    //should be max of renderer.getMaxAnisotropy()
-        
-		this.__cachedPatternMaterial = new MeshBasicMaterial( { alphaMap: texture, transparent: true } );
+		const pattern = entity.pattern;
+
+		this._patternHelper.dir.applyAxisAngle( new Vector3( 0,0,1 ), pattern.angle * Math.PI / 180 );
+		
+		this.__cachedPatternMaterial = new MeshBasicMaterial();
 		this.__cachedPatternMaterial.transparent = true;
-		this.__cachedPatternMaterial.opacity = 0.2;
+
+		this.__cachedPatternMaterial.color.setHex( this._colorHelper._getColorHex( entity, this.data.tables.layers ) );
+		this.__cachedPatternMaterial.color.convertSRGBToLinear();
+
+		this.__cachedPatternMaterial.onBeforeCompile = shader => {
+
+			shader.vertexShader = `
+			  varying vec4 vPos;
+			  varying vec4 vCenter;
+			  ${shader.vertexShader}
+			`.replace( '#include <begin_vertex>', `
+						#include <begin_vertex>
+						vPos = modelMatrix * vec4(position, 1.);
+						vCenter = modelMatrix * vec4(0);
+			` );
+			shader.fragmentShader = `
+			  #define ss(a, b, c) smoothstep(a, b, c)
+			  varying vec4 vPos;
+			  varying vec4 vCenter;
+			  ${shader.fragmentShader}
+			`.replace( 'vec4 diffuseColor = vec4( diffuse, opacity );',`
+			  vec3 col = diffuse;
+			  vec3 dir = normalize(vec3(${this._patternHelper.dir.x}, ${this._patternHelper.dir.y}, 0.));
+			  float dist = fract(dot(vPos.xyz * 2., dir));
+			  float fw = length(fwidth(vPos.xy));
+			  float line_size = 0.3;
+			  float empty_size = 1.0 - line_size;
+			  float f = ss(line_size - fw, line_size, dist) - ss(empty_size, empty_size + fw, dist);
+			  col = mix(col , col * 0., f);
+			  vec4 diffuseColor = vec4( col, opacity );
+			  ` );
+		};
 
 		return this.__cachedPatternMaterial;
 	}
