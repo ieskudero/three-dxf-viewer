@@ -7,11 +7,8 @@ import { Vector3,
 	Mesh, 
 	Shape,
 	ShapeGeometry,
-	BufferAttribute,
 	ArcCurve,
 	EllipseCurve,
-	BufferGeometry,
-import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 	MeshBasicMaterial, 
 	Box3 } from 'three';
 
@@ -91,7 +88,7 @@ export class HatchEntity extends BaseEntity {
 		let material = null;
 
 		//CONVERT ENTITIES TO POINTS
-		this._getBoundaryPoints( entity );
+		this._calculatePoints( entity );
 		geometry = this._generateBoundary( entity );
 
 		if( entity.fillType === 'SOLID' ) {
@@ -113,12 +110,11 @@ export class HatchEntity extends BaseEntity {
             material = this._colorHelper.getMaterial( entity, lineType, this.data.tables );*/
 		}
         
-		this._extrusionTransform( entity, geometry );
-
+		if( geometry ) this._extrusionTransform( entity, geometry );
 		return { geometry: geometry, material: material };		
 	}
 
-	_getBoundaryPoints( entity ) {
+	_calculatePoints( entity ) {
 		const boundary = entity.boundary;
 		for ( let i = 0; i < boundary.count; i++ ) {
 			const loop = boundary.loops[i];
@@ -246,80 +242,99 @@ export class HatchEntity extends BaseEntity {
 		);
 	}
 
-	_generateBoundary( boundary, addIndex = false ) {
+	_generateBoundary( entity ) {
 
-		let polylineGeos = [];
-		let edgeGeos = [];
-		let holes = [];
+		const boundary = entity.boundary;
+		//find outer loop, and set all the others as holes
+		this._calculateBoxes( boundary );
 
-		//add holes first
-		for ( let i = 0; i < boundary.loops.length; i++ ) {
-			const loop = boundary.loops[i];
-     
-			if( ( loop.type & 16 ) === 16 ) {               //LOOP IS A HOLE
-				let points = this._mergeLoopPoints( loop );
-                
-				if( points.length > 0 ) 
-					holes.push( new Shape().setFromPoints( points ) );
+		//get biggest loop
+		const outerLoop = this._getBiggestLoop( boundary );
 
-			}
-		}
-		for ( let i = 0; i < boundary.loops.length; i++ ) {
-			const loop = boundary.loops[i];
-     
-			if( ( loop.type & 1 ) === 1 ) {          //LOOP IS AN OUTER LINE
-				let points = this._mergeLoopPoints( loop );
-				if( points.length > 0 ) {
-					let shape = new Shape();
-					shape.setFromPoints( points );
-					shape.holes = holes.slice();
+		//get hole loops
+		const holeLoops = boundary.loops.filter( loop => loop !== outerLoop && this._isLoopHole( loop, entity.style ) );
 
-					let geometry = null;
-					if( addIndex ) {
-						geometry = this._createLineGeometry( points );
-					} else {
-						geometry = new ShapeGeometry( shape );
-					}
-					edgeGeos.push( geometry );
+		//create outer shape
+		const outerPoints = this._mergeLoopPoints( outerLoop );
+		if( outerPoints.length === 0 ) return null;
 
-					holes.length = 0;
-				}
-			}
+		const shape = new Shape();
+		shape.setFromPoints( this._mergeLoopPoints( outerLoop ) );
+
+		//create hole shapes
+		for( let i = 0; i < holeLoops.length; i++ ) {
+			const holePoints = this._mergeLoopPoints( holeLoops[i] );
+			if( holePoints.length === 0 ) continue;
+			const hole = new Shape();
+			hole.setFromPoints( holePoints );
+			shape.holes.push( hole );
 		}
 
-        
-        
-		let polyGeo = polylineGeos.length > 0 ? BufferGeometryUtils.mergeGeometries( polylineGeos, false ) : null;
-		let edgeGeo = edgeGeos.length > 0 ? BufferGeometryUtils.mergeGeometries( edgeGeos, false ) : null;
-
-		if( polyGeo && edgeGeo ) 
-			return BufferGeometryUtils.mergeGeometries( [ polyGeo, edgeGeo ], false );
-		else if( polyGeo )
-			return polyGeo;
-		else if( edgeGeo )
-			return edgeGeo;
-		else 
-			return null;        
+		//return geometry
+		return new ShapeGeometry( shape );
 	}
 
-	_createLineGeometry( points ) {
-		let geometry = new BufferGeometry();
-		let array = new Float32Array( points.length * 3 );
-		for ( let j = 0; j < points.length; j++ ) {
-			array[j * 3] = points[j].x;
-			array[j * 3 + 1] = points[j].y;
-			array[j * 3 + 2] = points[j].z;                            
+	_calculateBoxes( boundary ) {
+		for( let i = 0; i < boundary.loops.length; i++ ) {
+			const loop = boundary.loops[i];
+			loop.box = this._getLoopBox( loop );
 		}
-		geometry.setAttribute( 'position', new BufferAttribute( array, 3 ) );
-		geometry.setIndex( new BufferAttribute( new Uint16Array( this._geometryHelper.generatePointIndex( points ) ), 1 ) );
+	}
 
-		return geometry;
+	_getLoopBox( loop ) {
+		let min = new Vector3( Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE );
+		let max = new Vector3( Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE );
+		for( let i = 0; i < loop.entities.length; i++ ) {
+			const entity = loop.entities[i];
+			for( let j = 0; j < entity.points.length; j++ ) {
+				const point = entity.points[j];
+				min.min( point );
+				max.max( point );
+			}
+		}
+		return new Box3( min, max );
+	}
+
+	_getBiggestLoop( boundary ) {
+		
+		if( boundary.loops.length === 1 ) return boundary.loops[0];
+
+		let outerLoop = boundary.loops[0];
+		let outerLoopArea = this._getLoopArea( outerLoop );
+		for( let i = 1; i < boundary.loops.length; i++ ) {
+			const loop = boundary.loops[i];
+			const area = this._getLoopArea( loop );
+			if( area > outerLoopArea ) {
+				outerLoop = loop;
+				outerLoopArea = area;
+			}
+		}
+
+		return outerLoop;
+	}
+
+	_getLoopArea( loop ) {
+		let area = 0;
+		
+		//calculate area using box size
+		const box = loop.box;
+		area = ( box.max.x - box.min.x ) * ( box.max.y - box.min.y );
+
+		return area;
 	}
 
 	_mergeLoopPoints( loop ) {
 		let points = [];
-		for ( let i = 0; i < loop.entities.length; i++ ) {
-			const entity = loop.entities[i];
+
+		const entities = this._orderEntityPoints( loop.entities );
+
+		if( !entities ) {
+			console.warn( 'loops with separated entities not supproted yet' );
+			return points;
+		}
+
+		for ( let i = 0; i < entities.length; i++ ) {
+			const entity = entities[i];
 
 			if( !entity ) continue;
 
@@ -340,6 +355,64 @@ export class HatchEntity extends BaseEntity {
 			}       
 		}
 		return points;
+	}
+
+	_orderEntityPoints( entities ) {
+		let ordered = [];
+		ordered.push( entities[0] );
+		
+		let lastEntity = ordered[0];
+		while( ordered.length < entities.length ) {
+
+			let entityFirstPoint = lastEntity.points[0];
+			let entityLastPoint = lastEntity.points[lastEntity.points.length - 1];
+			const initialLengh = ordered.length;
+			for ( let i = ordered.length; i < entities.length; i++ ) {
+				const entity = entities[i];
+				if( !entity ) continue;
+				if( this._samePoints( entityLastPoint, entity.points[0] ) ) {
+					ordered.push( entity );
+					lastEntity = entity;
+					break;
+				}
+				if( this._samePoints( entityLastPoint, entity.points[entity.points.length - 1] ) ) {
+					entity.points.reverse();
+					ordered.push( entity );
+					lastEntity = entity;
+					break;
+				}
+				if( this._samePoints( entityFirstPoint, entity.points[0] ) ) {
+					for( let j = 0; j < ordered.length; j++ ) ordered[j].points.reverse();
+					ordered.push( entity );
+					lastEntity = entity;
+					break;
+				}
+				if( this._samePoints( entityFirstPoint, entity.points[entity.points.length - 1] ) ) {
+					for( let j = 0; j < ordered.length; j++ ) ordered[j].points.reverse();
+					entity.points.reverse();
+					ordered.push( entity );
+					lastEntity = entity;
+					break;
+				}
+			}
+
+			if( initialLengh === ordered.length ) 
+				return null;
+		}
+
+		return ordered;
+	}
+
+	_samePoints( p1, p2 ) {
+		return p1.distanceTo( p2 ) < 0.0001;
+	}
+
+	_isLoopHole( loop, style ) {
+		return style === 1 ? ( loop.type & 16 ) === 16 && ( loop.type & 1 ) !== 1 : true;
+	}
+
+	_isLoopOuter( loop ) {
+		return ( loop.type & 1 ) === 1 && ( loop.type & 16 ) !== 16;
 	}
 
 	_extrusionTransform( entity, geometry ) {
