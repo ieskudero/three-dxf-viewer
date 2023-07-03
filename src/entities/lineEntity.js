@@ -116,14 +116,15 @@ export class LineEntity extends BaseEntity {
 			let fromv = vertices[i];
 			let tov = vertices[i + 1];
 			let bulge = vertices[i].bulge;
-			let from = new Vector3( fromv.x, fromv.y, 0 );
-			let to = new Vector3( tov.x, tov.y, 0 );
+			let from = new Vector3( fromv.x, fromv.y, fromv.z );
+			let to = new Vector3( tov.x, tov.y, tov.z );
 
 			points.push( from );
 			if ( bulge ) {
-				let arcPoints = createArcoFromPolyline.default( [ from.x, from.y ], [ to.x, to.y ], bulge );
+				let arcPoints = createArcoFromPolyline.default( [ from.x, from.y, from.z ], [ to.x, to.y, to.z ], bulge );
 				for ( let j = 0, jl = arcPoints.length; j < jl; ++j ) {
-					points.push( new Vector3( extrusionZ * arcPoints[j][0], arcPoints[j][1], 0 ) );
+					const arc = arcPoints[j];
+					points.push( new Vector3( extrusionZ * arc[0], arc[1], arc.length > 2 ? arc[2] : 0 ) );
 				}
 			}
     
