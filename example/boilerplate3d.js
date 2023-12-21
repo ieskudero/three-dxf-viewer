@@ -55,10 +55,13 @@ export class Boilerplate3D {
 	
 		//resize
 		window.addEventListener( 'resize', () => {
-			this.camera.aspect = window.innerWidth / window.innerHeight;
+			const aspect = this.container.clientWidth / this.container.clientHeight;
+			const height = this.camera.top - this.camera.bottom;
+			this.camera.left = -0.5 * aspect * height + this.camera.position.x;
+			this.camera.right = 0.5 * aspect * height + this.camera.position.x;
 			this.camera.updateProjectionMatrix();
-			this.renderer.setSize( window.innerWidth, window.innerHeight );
-		}, false );
+			this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+		});
 	}
 
 	addDXF( dxf ) {
