@@ -5,6 +5,7 @@
     "main": "dist/main.js",
 	"module": "dist/main.js",
 	"files": [ "dist" ],
+	"type": "module",
     "scripts": {
 		"dev": "vite -c vite.dev.config.js --force",
 		"build": "vite -c vite.prod.config.js build",
