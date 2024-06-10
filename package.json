@@ -7,6 +7,7 @@
 	"files": [ "dist" ],
 	"type": "module",
     "scripts": {
+		"devr": "vite -c vite.dev.react.config.js --force",
 		"dev": "vite -c vite.dev.config.js --force",
 		"build": "vite -c vite.prod.config.js build",
 		"page": "vite -c vite.page.config.js build",
@@ -32,6 +33,14 @@
         "eslint": "9.4.0",
         "eslint-config-recommended": "4.1.0",
 		"eslint-plugin-import": "2.29.1",
+		"eslint-plugin-react": "7.34.2",
+		"eslint-plugin-react-hooks": "4.6.2",
+		"eslint-plugin-react-refresh": "0.4.7",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"@types/react": "18.3.3",
+		"@types/react-dom": "18.3.0",
+		"@vitejs/plugin-react": "4.3.0",
 		"lil-gui": "0.19.2"
     },
     "dependencies": {
