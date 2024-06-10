@@ -1,7 +1,5 @@
 import globals from 'globals';
 import js from '@eslint/js';
-import imprt  from 'eslint-plugin-import';
-import react from 'eslint-plugin-react';
 import babelParser from '@babel/eslint-parser';
 
 export default [
@@ -32,10 +30,6 @@ export default [
 					presets: [ '@babel/preset-react' ]
 				}
 			}
-		},
-		plugins : {
-			import: imprt,
-			react: react
 		},
 		rules: {
 			'indent': [ 'error', 'tab' ],
