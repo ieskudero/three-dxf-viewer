@@ -12,7 +12,7 @@
 		"build": "vite -c vite.prod.config.js build",
 		"page": "vite -c vite.page.config.js build",
         "docs": "node jsdoc",
-        "lint": "eslint --fix --ext .js,.jsx ."
+        "lint": "eslint --fix ."
     },
     "repository": {
         "type": "git",
@@ -30,6 +30,7 @@
 		"vite-plugin-html": "3.2.2",
 		"vite-plugin-static-copy":"1.0.5",		
         "jsdoc-to-markdown": "8.0.1",
+		"globals":"15.4.0",
         "eslint": "9.4.0",
         "eslint-config-recommended": "4.1.0",
 		"eslint-plugin-import": "2.29.1",
@@ -41,6 +42,8 @@
 		"@types/react": "18.3.3",
 		"@types/react-dom": "18.3.0",
 		"@vitejs/plugin-react": "4.3.0",
+		"@babel/eslint-parser": "7.24.7",
+		"@babel/preset-react": "7.24.7",
 		"lil-gui": "0.19.2"
     },
     "dependencies": {
