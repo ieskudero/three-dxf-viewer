@@ -86,6 +86,8 @@ export class TextEntity extends BaseEntity {
 		if( posAndRot.rotation )  geometry.applyQuaternion( posAndRot.rotation );
 		geometry.translate( posAndRot.pos.x , posAndRot.pos.y, posAndRot.pos.z );
 		
+		this._alignText( geometry, entity, posAndRot.pos );
+		
 		this._translateCenter( geometry, entity, posAndRot.pos );
             
 		//get material
@@ -253,6 +255,86 @@ export class TextEntity extends BaseEntity {
 			geometry.translate( center.x - geometry.boundingBox.max.x, geometry.boundingBox.min.y , -0.5 * depth );
 			break;
 		}
+	}
+
+	_alignText( geometry, entity, center ) {
+		//alignment
+		/*
+		(72)Horizontal text justification type (optional, default = 0) integer codes (not bit-coded):
+			0 = Left
+			1 = Center
+			2 = Right
+			3 = Aligned (if vertical alignment = 0)
+			4 = Middle (if vertical alignment = 0)
+			5 = Fit (if vertical alignment = 0)
+		(73)Vertical text justification type (optional, default = 0): integer codes (not bit-coded):
+			0 = Baseline
+			1 = Bottom
+			2 = Middle
+			3 = Top
+		-------------------------------------------------------------------------
+		|	Group 73	Group 72-0	   1		  2			3		 4		 5	 |
+		|	 3 (top)	   TLeft	TCenter		TRight							 |
+		|	 2 (middle)	   MLeft	MCenter		MRight							 |
+		|	 1 (bottom)	   BLeft	BCenter		BRight							 |
+		|	 0 (baseline)	Left	Center		Right	Aligned	   Middle	Fit  |
+		| 																		 |	
+		-------------------------------------------------------------------------
+		*/
+
+		geometry.computeBoundingBox();
+		let width = geometry.boundingBox.max.x - geometry.boundingBox.min.x;
+		let height = geometry.boundingBox.max.y - geometry.boundingBox.min.y;
+
+		let currentCenter = { 
+			x: geometry.boundingBox.min.x + width / 2,
+			y: geometry.boundingBox.min.y + height / 2
+		};
+
+		let x = 0, y = height;
+		switch ( entity.hAlign ) {
+		case 0:
+			// Left. TODO: get example to fix if needed
+			x = center.x - geometry.boundingBox.min.x;
+			break;
+		case 1:
+			// Center
+			x = center.x - currentCenter.x;
+			break;
+		case 2:
+			// Right. TODO: get example to fix if needed
+			x = center.x - geometry.boundingBox.max.x;
+			break;
+		case 3:
+			//TODO: Aligned if hAlign = 0
+			break;
+		case 4:
+			//TODO: Middle if hAlign = 0
+			break;
+		case 5:
+			//TODO: Fit if hAlign = 0
+			break;
+		}
+		
+		switch ( entity.vAlign ) {
+		case 0:
+			// Baseline. TODO: get example to fix if needed
+			y = center.y - currentCenter.y;
+			break;
+		case 1:
+			// Bottom. TODO: get example to fix if needed
+			y = height / 2;
+			break;
+		case 2:
+			// Middle
+			y = center.y - currentCenter.y;
+			break;
+		case 3:
+			//Top. TODO: get example to fix if needed
+			y = center.y - geometry.boundingBox.max.y;
+			break;
+		}
+		geometry.translate( x, y, 0 );
 	}
 
 	_replaceSpecialChars( str ) {
