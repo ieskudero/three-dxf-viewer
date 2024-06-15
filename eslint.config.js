@@ -1,6 +1,7 @@
 import globals from 'globals';
 import js from '@eslint/js';
 import babelParser from '@babel/eslint-parser';
+import react from 'eslint-plugin-react';
 
 export default [
 	{
@@ -31,6 +32,9 @@ export default [
 				}
 			}
 		},
+		plugins : {
+            react: react
+        },
 		rules: {
 			'indent': [ 'error', 'tab' ],
 			'linebreak-style': [ 'error', 'windows' ],
@@ -39,7 +43,9 @@ export default [
 			'no-async-promise-executor': 'off',        
 			'space-in-parens': [ 'error', 'always' ],
 			'object-curly-spacing': [ 'error', 'always' ],
-			'array-bracket-spacing': [ 'error', 'always' ]
+			'array-bracket-spacing': [ 'error', 'always' ],
+			'react/jsx-uses-react': 'error',   
+     		'react/jsx-uses-vars': 'error' 
 		},
 		files: [ 'src/**/*.js', 'src/**/*.jsx','example/**/*.js', 'example/**/*.jsx' ]
 	}
