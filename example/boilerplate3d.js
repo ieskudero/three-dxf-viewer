@@ -60,8 +60,8 @@ export class Boilerplate3D {
 			this.camera.left = -0.5 * aspect * height + this.camera.position.x;
 			this.camera.right = 0.5 * aspect * height + this.camera.position.x;
 			this.camera.updateProjectionMatrix();
-			this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
-		});
+			this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
+		} );
 	}
 
 	addDXF( dxf ) {
