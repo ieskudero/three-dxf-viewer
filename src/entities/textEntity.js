@@ -177,13 +177,14 @@ export class TextEntity extends BaseEntity {
 		let xAxisZ = entity.xAxisZ;
 		let drawingDirection = entity.drawingDirection;
         
-		let xt = x.toFixed( Properties.decimals );
-		let yt = y.toFixed( Properties.decimals );
-		let zt = z.toFixed( Properties.decimals );
-        
 		let zeros = '0'.repeat( Properties.decimals );
 		let zero = '0.' + zeros;
 		let one = '1.' + zeros;
+
+		let xt = typeof x !== 'undefined' ? x.toFixed( Properties.decimals ) : zero;
+		let yt = typeof y !== 'undefined' ? y.toFixed( Properties.decimals ) : zero;
+		let zt = typeof z !== 'undefined' ? z.toFixed( Properties.decimals ) : zero;
+        
 
 		let axisOnXYZ = ( ( xt === one && yt === zero && zt === zero ) || 
                   ( xt === zero && yt === one && zt === zero ) || 
