@@ -7,7 +7,7 @@ import { SolidEntity } from './solidEntity';
 import { CircleEntity } from './circleEntity';
 import { SplineEntity } from './splineEntity';
 import { HatchEntity } from './hatchEntity';
-import { Merger } from '../utils/merger';
+import { BlockMerger } from './baseEntity/blockMerger';
 
 /**
  * @class BlockEntity
@@ -182,7 +182,7 @@ export class BlockEntity extends BaseEntity {
 
 	_mergeGroup( group ) {
 		
-		const merger = new Merger();
+		const merger = new BlockMerger();
 
 		const mergeAvoid = ( c ) => c.name === 'BLOCK' || c.name === 'INSERT' || c.name === 'DIMENSION';
 

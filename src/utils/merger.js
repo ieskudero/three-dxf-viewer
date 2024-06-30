@@ -22,10 +22,34 @@ export class Merger {
 		let { mesh, line } = this._getMergedObjects( scene, clone, uuids );
 
 		//add mesh
-		if( mesh ) scene.add( mesh );
+		if ( ( mesh || line ) && scene.userData && scene.userData.entity ) {
+			let sx = scene.userData.entity.scaleX ? scene.userData.entity.scaleX : 1;
+			let sy = scene.userData.entity.scaleY ? scene.userData.entity.scaleY : 1;
+			let sz = scene.userData.entity.scaleZ ? scene.userData.entity.scaleZ : 1;
 
-		//add LineSegments
-		if( line ) scene.add( line );
+			//add mesh
+			if ( mesh ) {
+				mesh.scale.set( sx, sy, sz );
+				if ( scene.userData.entity.rotation ) {
+					mesh.rotation.z = scene.userData.entity.rotation * Math.PI / 180;
+				}
+				mesh.position.set( scene.userData.entity.x, scene.userData.entity.y, scene.userData.entity.z );
+				scene.add( mesh );
+			}
+
+			//add LineSegments
+			if ( line ) {
+				line.scale.set( sx, sy, sz );
+				if ( scene.userData.entity.rotation ) {
+					line.rotation.z = scene.userData.entity.rotation * Math.PI / 180;
+				}
+				line.position.set( scene.userData.entity.x, scene.userData.entity.y, scene.userData.entity.z );
+				scene.add( line );
+			}
+		} else {
+			if ( mesh ) mesh.add( mesh ); 
+			if ( line ) scene.add( line ); 
+		}
 
 		this._removeEmptyGroups( scene );
 
@@ -39,8 +63,8 @@ export class Merger {
 		const m = mesh.geometry ? new Mesh( mesh.geometry, mesh.materials ) : null;
 		const l = line.geometry ? new LineSegments( line.geometry, line.materials ) : null;
 
-		if( m ) m.userData = mesh.userData;
-		if( l ) l.userData = line.userData;
+		if ( m ) m.userData = { entities: mesh.userData, entity: scene.userData.entity };
+		if ( l ) l.userData = { entities: line.userData, entity: scene.userData.entity };
 
 		return { mesh: m, line: l };
 	}
