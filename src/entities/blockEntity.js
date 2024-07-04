@@ -135,9 +135,6 @@ export class BlockEntity extends BaseEntity {
 					obj3d.position.set( _entity.extrusionZ * _entity.x, _entity.y, _entity.z );
                     
 					group.add( obj3d );
-					if (extrusionZ < 0) {
-						console.log("xxxx", entity, _entity, group, obj3d);
-					}
 				}
 			} break;
 			case 'HATCH': {
