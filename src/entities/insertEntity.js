@@ -75,7 +75,7 @@ export class InsertEntity extends BaseEntity {
 			const extrusionZ = entity.extrusionZ < 0 ? -1 : 1;
 			group.add( this._blockEntity.drawBlock( block, extrusionZ ) );
 
-			group.scale.set( sx, sy, sz );
+			group.scale.set( extrusionZ * sx, sy, sz );
 
 			if ( entity.rotation ) {
 				group.rotation.z =  extrusionZ * ( entity.rotation * Math.PI / 180.0 );
