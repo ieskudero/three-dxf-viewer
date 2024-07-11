@@ -13,10 +13,10 @@ export default defineConfig( {
 		lib: {
 			entry: resolve( __dirname, 'main.js' ),
 			name: '[name]',
+			fileName: '[name]',
 		},
 		rollupOptions: {
 			output: {
-				entryFileNames: '[name].js'			//set output file name as main.js
 			}
 		}
 	},
