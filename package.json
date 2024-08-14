@@ -4,7 +4,7 @@
     "description": "DXF viewer using ThreeJS",
     "main": "dist/main.js",
 	"module": "dist/main.js",
-	"files": [ "dist" ],
+	"files": [ "dist/main.js", "dist/main.umb.cjs" ],
 	"type": "module",
     "scripts": {
 		"devr": "vite -c vite.dev.react.config.js --force",
@@ -12,7 +12,8 @@
 		"build": "vite -c vite.prod.config.js build",
 		"page": "vite -c vite.page.config.js build",
         "docs": "node jsdoc",
-        "lint": "eslint --fix ."
+        "lint": "eslint --fix .",
+        "prepare": "npm run build"
     },
     "repository": {
         "type": "git",
