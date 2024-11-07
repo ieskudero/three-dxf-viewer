@@ -8,6 +8,7 @@
 	"type": "module",
     "scripts": {
 		"devr": "vite -c vite.dev.react.config.js --force",
+        "devv": "vite -c vite.dev.vue.config.js --force",
 		"dev": "vite -c vite.dev.config.js --force",
 		"build": "vite -c vite.prod.config.js build",
 		"page": "vite -c vite.page.config.js build",
@@ -41,10 +42,12 @@
 		"@types/react-dom": "18.3.0",
 		"@babel/eslint-parser": "7.24.7",
 		"@babel/preset-react": "7.24.7",
-		"lil-gui": "0.19.2"
+		"lil-gui": "0.19.2",
+        "vue": "^3.5.12"
     },
     "dependencies": {
         "dxf": "5.1.0",
-        "three": "0.165.0"
+        "three": "0.165.0",
+        "@vitejs/plugin-vue": "^5.1.4"
     }
 }
