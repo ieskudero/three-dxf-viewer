@@ -43,11 +43,11 @@
 		"@babel/eslint-parser": "7.24.7",
 		"@babel/preset-react": "7.24.7",
 		"lil-gui": "0.19.2",
-        "vue": "^3.5.12"
+        "vue": "^3.5.12",
+        "@vitejs/plugin-vue": "^5.1.4"
     },
     "dependencies": {
         "dxf": "5.1.0",
-        "three": "0.165.0",
-        "@vitejs/plugin-vue": "^5.1.4"
+        "three": "0.165.0"
     }
 }
