@@ -1,6 +1,6 @@
 {
     "name": "three-dxf-viewer",
-    "version": "1.0.33",
+    "version": "1.0.34",
     "description": "DXF viewer using ThreeJS",
     "main": "dist/main.js",
 	"module": "dist/main.js",
