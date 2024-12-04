@@ -124,13 +124,15 @@ export class BlockEntity extends BaseEntity {
 					let sy = _entity.scaleY ? _entity.scaleY : 1;
 					let sz = _entity.scaleZ ? _entity.scaleZ : 1;
                         
-					obj3d.scale.set( sx, sy, sz );
+					_entity.extrusionZ = _entity.extrusionZ < 0 ? -1 : 1;
+
+					obj3d.scale.set( _entity.extrusionZ * sx, sy, sz );
 
 					if ( _entity.rotation ) {
-						obj3d.rotation.z = _entity.rotation * Math.PI / 180;
+						obj3d.rotation.z = _entity.extrusionZ * _entity.rotation * Math.PI / 180;
 					}
                         
-					obj3d.position.set( _entity.x, _entity.y, _entity.z );
+					obj3d.position.set( _entity.extrusionZ * _entity.x, _entity.y, _entity.z );
                     
 					group.add( obj3d );
 				}
