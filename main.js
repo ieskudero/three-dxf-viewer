@@ -9,6 +9,7 @@ import { Merger } from './src/utils/merger';
 import { SnapsHelper } from './src/utils/snapsHelper';
 import { Hover } from './src/utils/hover';
 import { Select } from './src/utils/select';
+import { UNITS } from './src/entities/baseEntity/eUnit';
 
 /**
  * @property {class} DXFViewer Main viewer object
@@ -20,5 +21,6 @@ export {
 	Merger,
 	SnapsHelper,
 	Hover,
-	Select
+	Select,
+	UNITS
 };
