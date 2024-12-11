@@ -28,27 +28,27 @@
 	  },
 	"homepage": "https://ieskudero.github.io/three-dxf-viewer/",
     "devDependencies": {
-		"vite": "5.2.12",
+		"vite": "6.0.3",
 		"vite-plugin-html": "3.2.2",
-		"vite-plugin-static-copy":"1.0.5",		
-        "jsdoc-to-markdown": "8.0.1",
-		"globals":"15.4.0",
-        "eslint": "9.4.0",
+		"vite-plugin-static-copy":"2.2.0",		
+        "jsdoc-to-markdown": "9.1.1",
+		"globals":"15.13.0",
+        "eslint": "9.16.0",
         "eslint-config-recommended": "4.1.0",
-		"react": "^18.3.1",
-		"react-dom": "^18.3.1",
-		"@vitejs/plugin-react": "4.3.1",
-		"eslint-plugin-react": "7.34.2",
-		"@types/react": "18.3.3",
-		"@types/react-dom": "18.3.0",
-		"@babel/eslint-parser": "7.24.7",
-		"@babel/preset-react": "7.24.7",
-		"lil-gui": "0.19.2",
-        "vue": "^3.5.12",
-        "@vitejs/plugin-vue": "^5.1.4"
+		"react": "19.0.0",
+		"react-dom": "19.0.0",
+		"@vitejs/plugin-react": "4.3.4",
+		"eslint-plugin-react": "7.37.2",
+		"@types/react": "19.0.1",
+		"@types/react-dom": "19.0.2",
+		"@babel/eslint-parser": "7.25.9",
+		"@babel/preset-react": "7.26.3",
+		"lil-gui": "0.20.0",
+        "vue": "3.5.13",
+        "@vitejs/plugin-vue": "5.2.1"
     },
     "dependencies": {
-        "dxf": "5.1.0",
-        "three": "0.165.0"
+        "dxf": "5.2.0",
+        "three": "0.171.0"
     }
 }
