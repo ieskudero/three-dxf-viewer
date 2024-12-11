@@ -47,7 +47,7 @@ export class Merger {
 				scene.add( line );
 			}
 		} else {
-			if ( mesh ) mesh.add( mesh ); 
+			if ( mesh ) scene.add( mesh ); 
 			if ( line ) scene.add( line ); 
 		}
 
