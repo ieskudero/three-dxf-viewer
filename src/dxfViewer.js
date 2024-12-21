@@ -29,8 +29,6 @@ export class DXFViewer {
 		this._cache = {};
 		this.useCache = true;
 
-		this.onBeforeTextChanged = null;
-
 		this.colorHelper = new ColorHelper();
 		this.LayerHelper = new LayerHelper();
 	}    
