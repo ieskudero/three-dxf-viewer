@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
+import * as packageJson from "./package.json";
 
 export default defineConfig( {
 	root: './',
@@ -16,6 +17,7 @@ export default defineConfig( {
 			//fileName: '[name]',
 		},
 		rollupOptions: {
+			external: Object.keys(packageJson.peerDependencies),
 			output: [{
 				entryFileNames: `main.js`,
 				format: "es",
