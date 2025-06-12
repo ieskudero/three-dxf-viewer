@@ -17,14 +17,14 @@ export default defineConfig( {
 		},
 		rollupOptions: {
 			output: [{
-				entryFileNames: `index.mjs`,
+				entryFileNames: `main.js`,
 				format: "es",
 				globals: {
 					three: "THREE",
 				},
 			},{
           		name: 'DXFViewerLib',
-          		entryFileNames: `index.umd.cjs`,
+          		entryFileNames: `main.umd.cjs`,
           		format: "umd",
           		globals: {
             		three:'THREE'
