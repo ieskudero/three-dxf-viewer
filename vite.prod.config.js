@@ -11,14 +11,27 @@ export default defineConfig( {
 		assetsDir: './dist',
 		sourcemap: false,
 		lib: {
-			entry: resolve( __dirname, 'main.js' ),
-			name: '[name]',
-			fileName: '[name]',
+			entry: resolve( __dirname, 'main.js' )
+			//name: '[name]',
+			//fileName: '[name]',
 		},
 		rollupOptions: {
-			output: {
-			}
-		}
+			output: [{
+				entryFileNames: `index.mjs`,
+				format: "es",
+				globals: {
+					three: "THREE",
+				},
+			},{
+          		name: 'DXFViewerLib',
+          		entryFileNames: `index.umd.cjs`,
+          		format: "umd",
+          		globals: {
+            		three:'THREE'
+					,dxf:'DXF'
+				}
+          	}]
+        }
 	},
 	plugins: []
 } );
