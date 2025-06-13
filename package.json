@@ -50,5 +50,8 @@
     "dependencies": {
         "dxf": "5.2.0",
         "three": "0.171.0"
-    }
+    },"peerDependencies": {
+    "three": ">=0.171.0",
+    "dxf": "5.2.0"
+  }
 }
