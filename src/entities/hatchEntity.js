@@ -3,14 +3,17 @@ import { LineEntity } from './lineEntity';
 import { SplineEntity } from './splineEntity';
 
 import { Vector3, 
+	Vector2,
 	Group,
 	Mesh, 
 	Shape,
 	ShapeGeometry,
 	ArcCurve,
 	EllipseCurve,
-	MeshBasicMaterial, 
-	Box3 } from 'three';
+	Box3,
+	BufferGeometry,
+	Float32BufferAttribute,
+	LineSegments } from 'three';
 
 /**
  * @class HatchEntity
@@ -63,7 +66,7 @@ export class HatchEntity extends BaseEntity {
 
 			if( geometry ) {
                 
-				let obj = new Mesh( geometry, material );
+				let obj = entity.fillType === 'SOLID' ? new Mesh( geometry, material ) : new LineSegments( geometry, material );
 
 				obj.userData = { entity: entity };
 				obj.renderOrder = entity.fillType === 'SOLID' ? -1 : 0;
@@ -89,28 +92,23 @@ export class HatchEntity extends BaseEntity {
 
 		//CONVERT ENTITIES TO POINTS
 		this._calculatePoints( entity );
-		geometry = this._generateBoundary( entity );
+
+		//find outer loop, and set all the others as holes
+		this._calculateBoxes( entity.boundary );
 
 		if( entity.fillType === 'SOLID' ) {
             
+			geometry = this._generateBoundary( entity );
 			material = this._colorHelper.getMaterial( entity, 'shape', this.data.tables );
 		}
 		else if( entity.fillType === 'PATTERN' ) {
 
-			material = this._getPatternMaterial( entity );
-			/*
-        
-            let lineType = 'line';
-            
-            if ( entity.lineTypeName ) {
-                let ltype = this.data.tables.ltypes[entity.lineTypeName];
-                if( ltype && ltype.pattern.length > 0 ) lineType = 'dashed';
-            }
-
-            material = this._colorHelper.getMaterial( entity, lineType, this.data.tables );*/
+			geometry = this._generatePatternGeometry( entity );
+			material = this._colorHelper.getMaterial( entity, 'line', this.data.tables );
 		}
         
 		if( geometry ) this._extrusionTransform( entity, geometry );
+
 		return { geometry: geometry, material: material };		
 	}
 
@@ -131,52 +129,6 @@ export class HatchEntity extends BaseEntity {
 				}
 			}
 		}
-	}
-
-	_getPatternMaterial( entity ) {
-
-		if( this.__cachedPatternMaterial ) return this.__cachedPatternMaterial;
-
-		const pattern = entity.pattern;
-
-		this._patternHelper.dir.applyAxisAngle( new Vector3( 0,0,1 ), pattern.angle * Math.PI / 180 );
-		
-		this.__cachedPatternMaterial = new MeshBasicMaterial();
-		this.__cachedPatternMaterial.transparent = true;
-
-		this.__cachedPatternMaterial.color.setHex( this._colorHelper._getColorHex( entity, this.data.tables.layers ) );
-		this.__cachedPatternMaterial.color.convertSRGBToLinear();
-
-		this.__cachedPatternMaterial.onBeforeCompile = shader => {
-
-			shader.vertexShader = `
-			  varying vec4 vPos;
-			  varying vec4 vCenter;
-			  ${shader.vertexShader}
-			`.replace( '#include <begin_vertex>', `
-						#include <begin_vertex>
-						vPos = modelMatrix * vec4(position, 1.);
-						vCenter = modelMatrix * vec4(0);
-			` );
-			shader.fragmentShader = `
-			  #define ss(a, b, c) smoothstep(a, b, c)
-			  varying vec4 vPos;
-			  varying vec4 vCenter;
-			  ${shader.fragmentShader}
-			`.replace( 'vec4 diffuseColor = vec4( diffuse, opacity );',`
-			  vec3 col = diffuse;
-			  vec3 dir = normalize(vec3(${this._patternHelper.dir.x}, ${this._patternHelper.dir.y}, 0.));
-			  float dist = fract(dot(vPos.xyz * 2., dir));
-			  float fw = length(fwidth(vPos.xy));
-			  float line_size = 0.3;
-			  float empty_size = 1.0 - line_size;
-			  float f = ss(line_size - fw, line_size, dist) - ss(empty_size, empty_size + fw, dist);
-			  col = mix(col , col * 0., f);
-			  vec4 diffuseColor = vec4( col, opacity );
-			  ` );
-		};
-
-		return this.__cachedPatternMaterial;
 	}
 
 	_getLinePoints( entity ){
@@ -245,8 +197,6 @@ export class HatchEntity extends BaseEntity {
 	_generateBoundary( entity ) {
 
 		const boundary = entity.boundary;
-		//find outer loop, and set all the others as holes
-		this._calculateBoxes( boundary );
 
 		//get biggest loop
 		const outerLoop = this._getBiggestLoop( boundary );
@@ -259,7 +209,7 @@ export class HatchEntity extends BaseEntity {
 		if( outerPoints.length === 0 ) return null;
 
 		const shape = new Shape();
-		shape.setFromPoints( this._mergeLoopPoints( outerLoop ) );
+		shape.setFromPoints( outerPoints );
 
 		//create hole shapes
 		for( let i = 0; i < holeLoops.length; i++ ) {
@@ -419,5 +369,129 @@ export class HatchEntity extends BaseEntity {
 		if( entity.extrusionDir.z < 0 && geometry ) {
 			geometry.scale( -1, 1, 1 );
 		}
+	}
+
+	_generatePatternGeometry( entity ) {
+		const pattern = entity.pattern;
+		const angleRad = pattern.angle * Math.PI / 180;
+		const dir = new Vector2( Math.cos( angleRad ), Math.sin( angleRad ) );
+		const perp = new Vector2( -dir.y, dir.x );
+		const offsetVec = new Vector2( pattern.offsetX, pattern.offsetY );
+		
+		let spacing = offsetVec.length();
+		if ( spacing === 0 ) spacing = entity.spacing || 1;
+
+		const perpNormalized = perp.clone().normalize();
+		const base = new Vector2( pattern.x || 0, pattern.y || 0 );
+		const baseProj = base.dot( perpNormalized );
+
+		const boundary = entity.boundary;
+		const outerLoop = this._getBiggestLoop( boundary );
+		let polygon = this._mergeLoopPoints( outerLoop );
+
+		if ( polygon.length === 0 ) return null;
+
+		if ( this._signedArea( polygon ) < 0 ) {
+			polygon.reverse();
+		}
+
+		const holeLoops = boundary.loops.filter( loop => loop !== outerLoop && this._isLoopHole( loop, entity.style ) );
+		const holePolygons = [];
+		for ( let hl of holeLoops ) {
+			let hp = this._mergeLoopPoints( hl );
+			if ( hp.length > 0 ) holePolygons.push( hp );
+		}
+
+		let minProj = Infinity;
+		let maxProj = -Infinity;
+		for ( let p of polygon ) {
+			const proj = new Vector2( p.x, p.y ).dot( perpNormalized );
+			minProj = Math.min( minProj, proj );
+			maxProj = Math.max( maxProj, proj );
+		}
+
+		for ( let hole of holePolygons ) {
+			for ( let p of hole ) {
+				const proj = new Vector2( p.x, p.y ).dot( perpNormalized );
+				minProj = Math.min( minProj, proj );
+				maxProj = Math.max( maxProj, proj );
+			}
+		}
+
+		const startK = Math.ceil( ( minProj - baseProj ) / spacing );
+		const endK = Math.floor( ( maxProj - baseProj ) / spacing );
+
+		const positions = [];
+
+		for ( let k = startK; k <= endK; k++ ) {
+			const offset = baseProj + k * spacing;
+			let intersections = [];
+
+			// Intersections with outer
+			for ( let i = 0; i < polygon.length; i++ ) {
+				const p1 = new Vector2( polygon[i].x, polygon[i].y );
+				const p2 = new Vector2( polygon[( i + 1 ) % polygon.length].x, polygon[( i + 1 ) % polygon.length].y );
+				const den = p2.clone().sub( p1 ).dot( perpNormalized );
+				if ( Math.abs( den ) < 1e-6 ) continue;
+				const num = offset - p1.dot( perpNormalized );
+				const t = num / den;
+				if ( t >= 0 && t <= 1 ) {
+					const intPoint = p1.clone().add( p2.clone().sub( p1 ).multiplyScalar( t ) );
+					intersections.push( intPoint );
+				}
+			}
+
+			// Intersections with holes
+			for ( let hole of holePolygons ) {
+				for ( let i = 0; i < hole.length; i++ ) {
+					const p1 = new Vector2( hole[i].x, hole[i].y );
+					const p2 = new Vector2( hole[( i + 1 ) % hole.length].x, hole[( i + 1 ) % hole.length].y );
+					const den = p2.clone().sub( p1 ).dot( perpNormalized );
+					if ( Math.abs( den ) < 1e-6 ) continue;
+					const num = offset - p1.dot( perpNormalized );
+					const t = num / den;
+					if ( t >= 0 && t <= 1 ) {
+						const intPoint = p1.clone().add( p2.clone().sub( p1 ).multiplyScalar( t ) );
+						intersections.push( intPoint );
+					}
+				}
+			}
+
+			// Sort by projection on dir
+			intersections.sort( ( a, b ) => a.dot( dir ) - b.dot( dir ) );
+
+			// Deduplicate intersections
+			let uniqueInter = [];
+			for ( let int of intersections ) {
+				if ( uniqueInter.length === 0 || Math.abs( int.dot( dir ) - uniqueInter[ uniqueInter.length - 1 ].dot( dir ) ) > 1e-6 ) {
+					uniqueInter.push( int );
+				}
+			}
+			intersections = uniqueInter;
+
+			// Draw pairs (even-odd rule)
+			for ( let j = 0; j < intersections.length; j += 2 ) {
+				if ( j + 1 < intersections.length ) {
+					const start = intersections[j];
+					const end = intersections[j + 1];
+					positions.push( start.x, start.y, 0 );
+					positions.push( end.x, end.y, 0 );
+				}
+			}
+		}
+
+		const geometry = new BufferGeometry();
+		geometry.setAttribute( 'position', new Float32BufferAttribute( positions, 3 ) );
+		return geometry;
+	}
+
+	_signedArea( points ) {
+		let area = 0;
+		for ( let i = 0; i < points.length; i++ ) {
+			const j = ( i + 1 ) % points.length;
+			area += points[i].x * points[j].y;
+			area -= points[j].x * points[i].y;
+		}
+		return area / 2;
 	}
 }
