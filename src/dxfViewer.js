@@ -56,40 +56,38 @@ export class DXFViewer {
 
 		if( !this._font ) return null;
 
-		return new Promise( async ( resolve ) => {
-			let cached = this._fromCache( path );
+		let cached = this._fromCache( path );
             
-			//from cache
-			if( cached ) {
-				resolve( this._drawDXF( cached.data ? cached.data : cached ) );
-				return;
-			}
+		//from cache
+		if( cached ) {
+			return this._drawDXF( cached.data ? cached.data : cached );
+		}
             
-			//load file
-			let rawdata = await fetch( path );
-			if( rawdata.status !== 200 ) return null;            
-			let file = await rawdata.text();
+		//load file
+		let rawdata = await fetch( path );
+		if( rawdata.status !== 200 ) return null;            
+		let file = await rawdata.text();
 
-			//parse data
-			let data = new Helper.default( file ).parse();
+		//parse data
+		let data = new Helper.default( file ).parse();
 
-			//cache
-			this._toCache( path, data );
+		//cache
+		this._toCache( path, data );
 
-			this._lastDXF = data;
+		this._lastDXF = data;
 
-			//parse layers
-			data.tables.layers = this.LayerHelper.parse( data.tables.layers );
+		//parse layers
+		data.tables.layers = this.LayerHelper.parse( data.tables.layers );
 
-			//export layers
-			this.layers = data.tables.layers;
+		//export layers
+		this.layers = data.tables.layers;
 
-			//export global unit
-			this.unit = data.header ? data.header.insUnits : 0;
+		//export global unit
+		this.unit = data.header ? data.header.insUnits : 0;
 
-			//return draw
-			resolve( await this._drawDXF( data ) );
-		} );
+		//return draw
+		const draw = await this._drawDXF( data );
+		return draw;
 	}
 
 	async _drawDXF( data ) {
