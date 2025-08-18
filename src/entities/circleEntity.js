@@ -131,7 +131,7 @@ export class CircleEntity extends BaseEntity {
 
 		let xrad = Math.sqrt( Math.pow( entity.majorX, 2 ) + Math.pow( entity.majorY, 2 ) );
 		let yrad = xrad * entity.axisRatio;
-		let rotation = Math.atan2( entity.majorY, entity.majorX );
+		let rotation = Math.atan2( entity.majorY, entity.extrusionZ < 0 ? -entity.majorX : entity.majorX );
 
 		let center = {
 			x: entity.center ? entity.center.x : entity.x,
