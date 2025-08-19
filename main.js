@@ -9,6 +9,7 @@ import { Merger } from './src/utils/merger';
 import { SnapsHelper } from './src/utils/snapsHelper';
 import { Hover } from './src/utils/hover';
 import { Select } from './src/utils/select';
+import { CADControls } from './src/utils/cadControls';
 import { UNITS } from './src/entities/baseEntity/eUnit';
 
 /**
@@ -22,5 +23,6 @@ export {
 	SnapsHelper,
 	Hover,
 	Select,
+	CADControls,
 	UNITS
 };

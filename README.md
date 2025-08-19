@@ -69,6 +69,24 @@ The viewer caches geometries by default. This can be changed to avoid it.
 viewer.useCache = false;
 ```
 
+## Controls
+
+The class `CADControls` can be used to add controls to the scene, instead of `Select` and `Hover` classes.
+
+```js
+import { CADControls, DXFViewer } from 'three-dxf-viewer';
+
+const viewer = new DXFViewer();
+let dxf = await viewer.getFromPath( dxfFilePath, fontPath );
+
+const controls = new CADControls( three.renderer.domElement, three.camera, dxf, viewer._lastDXF );
+controls.subscribe( 'select', ( selects ) => console.log( 'Selected entities', selects ) );
+controls.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered.userData.entity ) );
+
+scene.add( dxf );
+
+```
+
 ## Utilities
 
 There are 4 utilities that can be used optionally with the viewer:

@@ -14,7 +14,7 @@ export class Hover extends Raycaster {
 		this._initRaycasting( container, camera, dxf3d, raycasting );
 
 		//create orange hover material that will be seeen above all other materials
-		this._setMaterial( 0xffa500 );
+		this._material = this._setMaterial( 0xffa500 );
 		
 		this.container.addEventListener( 'pointermove', async( e ) => await this._onPointerMove( e ), false );
 	}

@@ -2,8 +2,7 @@ import { DXFViewer } from '../../src/dxfViewer.js';
 import { SnapsHelper } from '../../src/utils/snapsHelper.js';
 import { Boilerplate } from '../boilerplate.js';
 import GUI from 'lil-gui';
-import { Hover } from '../../src/utils/hover.js';
-import { Select } from '../../src/utils/select.js';
+import { CADControls } from '../../src/utils/CADControls.js';
 
 import './index.css';
 
@@ -26,13 +25,10 @@ html.onLoad = async ( file ) => {
 		if( snaps ) snaps.clear();
 		snaps = new SnapsHelper( dxf, html.three.renderer, html.three.scene, html.three.camera, html.three.controls );
 
-		//Optional. Add Hover
-		const hover = new Hover( html.three.renderer.domElement, html.three.camera, dxf, viewer._lastDXF );
-		hover.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered.userData.entity ) );
-
-		//Optional. Add Selection
-		const select = new Select( html.three.renderer.domElement, html.three.camera, dxf, viewer._lastDXF );
-		select.subscribe( 'select', ( selects ) => console.log( 'Selected entities', selects ) );
+		//Optional. Add CAD Controls
+		const controls = new CADControls( html.three.renderer.domElement, html.three.camera, dxf, viewer._lastDXF );
+		controls.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered.userData.entity ) );
+		controls.subscribe( 'select', ( selects ) => console.log( 'Selected entities', selects ) );
 
 		//get layer names
 		const layer_names = Object.keys( viewer.layers );

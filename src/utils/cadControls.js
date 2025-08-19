@@ -1,7 +1,7 @@
 import { Box3, Vector3 } from 'three';
 import { Raycaster } from '../tools/raycaster';
 
-export class Select extends Raycaster {
+export class CADControls extends Raycaster {
 	constructor( container, camera, dxf3d, dxf, raycasting = null ) {
 		
 		super();
@@ -11,11 +11,13 @@ export class Select extends Raycaster {
 		this.dxf = dxf;
 
 		//init raycasting
-		this._initRaycasting( container, camera, dxf3d, raycasting );
+		this._initRaycasting( container, this.camera, dxf3d, raycasting );
 
-		//create orange hover material that will be seeen above all other materials
+		//blue selection material & orange hover material that will be seeen above all other materials
 		this._material = this._setMaterial( 0x0000ff );
+		this._materialHover = this._setMaterial( 0xffa500 );
 
+		this._clonedObjects = {};
 		this.selecteds = [];
 		this._boxHelpers = {
 			start3dpoint: new Vector3(),
@@ -66,7 +68,6 @@ export class Select extends Raycaster {
 		//deselect all
 		this.deselectAll();
 
-
 		//TRY TO SELECT USING SELECTION BOX
 		let ss = null;
 		if( this._onSelectionBox ) {
@@ -100,10 +101,13 @@ export class Select extends Raycaster {
 
 	async _onPointerMove( event ) {
 
+		event.preventDefault();
+		const rect = event.target.getBoundingClientRect();
+		const x = event.clientX - rect.left;
+		const y = event.clientY - rect.top;
+
+		//selection 
 		if( this._onSelectionBox ) {
-			var rect = event.target.getBoundingClientRect();
-			const x = event.clientX - rect.left;
-			const y = event.clientY - rect.top;
 
 			this._onSelectionBox.end = { x: x, y: y };
 			this.drawSelectionBox( this._onSelectionBox.start, this._onSelectionBox.end, rect );
@@ -112,6 +116,21 @@ export class Select extends Raycaster {
 
 		if( this._isMouseDown ) {
 			this._isMouseMoving = true;
+		}
+
+		// hover		
+		this.pointer.x = ( x / this.container.clientWidth ) * 2 - 1;
+		this.pointer.y = - ( y / this.container.clientHeight ) * 2 + 1;
+		
+		const intersected = this.raycast.raycast( this.pointer );
+
+		this.removeHover();
+		if( intersected )  {
+			const obj = this._isInsideEntityList( intersected.object ) ? intersected.object : intersected.object.parent;
+			if( !obj.userData ) return;
+
+			this.hover( obj );			
+			await this.trigger( 'hover', obj );
 		}
 	}
 
@@ -197,6 +216,12 @@ export class Select extends Raycaster {
 		return blocks;
 	}
 
+	_fitInsideBox( box, root ) {
+		let b = new Box3().setFromObject( root );
+		
+		return box.containsBox( b );
+	}
+
 	_getInsideElements( element, inside ) {
 		if( this._isInsideEntityList( element ) ) {
 			inside.push( element );
@@ -210,30 +235,16 @@ export class Select extends Raycaster {
 		}
 	}
 
-	_fitInsideBox( box, root ) {
-		let b = new Box3().setFromObject( root );
-		
-		return box.containsBox( b );
-	}
-
-
 	select( obj, material = null ) {
 		const objs = obj instanceof Array ? obj : [ obj ];
 		objs.forEach( o => {
 
-			//dimensions are selected with all the elements
-			let dim = null;
-			let parent = o.parent;
-			while( dim === null && parent !== null ) {
-				if( parent.name === 'DIMENSION' ) dim = parent;
-				parent = parent.parent;
-			}
-
-			if( dim ) o = dim;
+			o = this._checkForDimension( o );
 
 			const clone = this._clone( o );
 			clone.selected = true;
 			clone.traverse( c => { if ( c.material ) c.material = material ? material : this._material; } );
+			clone.renderOrder = 1; //make sure the selected object is rendered above others
 			o.parent.add( clone );
 			this.selecteds.push( clone );
 		} );
@@ -244,5 +255,40 @@ export class Select extends Raycaster {
 			this.selecteds.forEach( s => s.parent.remove( s ) );
 			this.selecteds.length = 0;
 		}
+	}
+
+	hover( obj, material = null ) {
+
+		obj = this._checkForDimension( obj );
+		
+		//clone first
+		if( !this._clonedObjects[ obj.uuid ] ) this._clonedObjects[ obj.uuid ] = { clone: this._clone( obj ), parent: obj.parent };
+		const cloneData = this._clonedObjects[ obj.uuid ];
+		cloneData.clone.hovered = true;
+		
+		//set material
+		cloneData.clone.traverse( c => { if ( c.material ) c.material = material ? material : this._materialHover; } );
+
+		this._hovered = cloneData.clone;
+
+		cloneData.parent.add( this._hovered );
+	}
+
+	removeHover() {
+		//remove previous hover
+		if( this._hovered && this._hovered.parent ) { 
+			this._hovered.parent.remove( this._hovered ); 
+			this._hovered = null;
+		}
+	}
+
+	_checkForDimension( obj )  {
+		let dim = obj;
+		while( dim !== null ) {
+			if( dim.name === 'DIMENSION' ) return dim;
+			dim = dim.parent;
+		}
+
+		return obj;
 	}
 }
