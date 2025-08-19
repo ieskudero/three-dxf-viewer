@@ -72,26 +72,9 @@ export class Snaps {
 			const group = objs[i];
 			
 			group.traverse( obj => {
-				if( lines && ( obj.isLine || obj.isLineSegments ) ) {
+				if( ( lines && ( obj.isLine || obj.isLineSegments ) ) || 
+					( meshes && ( obj.isMesh ) ) ) {
 					obj.updateWorldMatrix( true, false );
-					//So far we get first & last points, but we can get all points by looping through the vertices
-					this.snaps.push( {
-						entity: obj,
-						point: new Vector3( obj.geometry.attributes.position.getX( 0 ), 
-							obj.geometry.attributes.position.getY( 0 ), 
-							obj.geometry.attributes.position.getZ( 0 ) ).applyMatrix4( obj.matrixWorld ) 
-					} );
-					let last = obj.geometry.attributes.position.count - 1;
-					this.snaps.push( {
-						entity: obj,
-						point: new Vector3( obj.geometry.attributes.position.getX( last ), 
-							obj.geometry.attributes.position.getY( last ), 
-							obj.geometry.attributes.position.getZ( last ) ).applyMatrix4( obj.matrixWorld ) 
-					} );
-				}
-				if( meshes && ( obj.isMesh ) ) {
-					obj.updateWorldMatrix( true, false );
-
 					for ( let j = 0; j < obj.geometry.attributes.position.count; j++ ) {
 						this.snaps.push( {
 							entity: obj,
