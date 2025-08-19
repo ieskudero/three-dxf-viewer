@@ -19,7 +19,10 @@ html.onLoad = async ( file ) => {
 
 		//Optional. Add control snap. Do it before merge
 		if( snaps ) snaps.clear();
-		snaps = new SnapsHelper( dxf, html.three.renderer, html.three.scene, html.three.camera, html.three.controls );
+		snaps = new SnapsHelper( dxf, html.three.renderer, html.three.scene, html.three.camera, html.three.controls );		
+		snaps.subscribe( 'nearSnap', ( snap ) => {			
+			console.log( `distance from Mouse: ${snap.distance}, 3d entity: ${snap.snap.entity.uuid}, DXF entity: ${snap.snap.entity.userData.handle}` );
+		} );
 
 		//Optional. If CAD is too big we can merge it
 		const merged = new Merger().merge( dxf );

@@ -69,6 +69,24 @@ The viewer caches geometries by default. This can be changed to avoid it.
 viewer.useCache = false;
 ```
 
+## Controls
+
+The class `CADControls` can be used to add controls to the scene, instead of `Select` and `Hover` classes.
+
+```js
+import { CADControls, DXFViewer } from 'three-dxf-viewer';
+
+const viewer = new DXFViewer();
+let dxf = await viewer.getFromPath( dxfFilePath, fontPath );
+
+const controls = new CADControls( three.renderer.domElement, three.camera, dxf, viewer._lastDXF );
+controls.subscribe( 'select', ( selects ) => console.log( 'Selected entities', selects ) );
+controls.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered.userData.entity ) );
+
+scene.add( dxf );
+
+```
+
 ## Utilities
 
 There are 4 utilities that can be used optionally with the viewer:
@@ -93,9 +111,10 @@ The select class can be used to select entities in the scene. It will highlight 
 ```js
 import { Select, DXFViewer } from 'three-dxf-viewer';
 
-let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
+const viewer = new DXFViewer();
+let dxf = await viewer.getFromPath( dxfFilePath, fontPath );
 
-const select = new Select( three.renderer.domElement, three.camera, dxf );
+const select = new Select( three.renderer.domElement, three.camera, dxf, viewer._lastDXF );
 select.subscribe( 'select', ( selects ) => console.log( 'Selected entities', selects ) );
 
 scene.add( dxf );
@@ -108,10 +127,11 @@ The hover class will highlight the hovered entity by the mouse.
 ```js
 import { Hover, DXFViewer } from 'three-dxf-viewer';
 
-let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
+const viewer = new DXFViewer();
+let dxf = await viewer.getFromPath( dxfFilePath, fontPath );
 
-const hover = new Hover( three.renderer.domElement, three.camera, dxf );
-hover.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered ) );
+const hover = new Hover( three.renderer.domElement, three.camera, dxf, viewer._lastDXF );
+hover.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered.userData.entity ) );
 
 scene.add( dxf );
 
@@ -127,6 +147,9 @@ import { SnapsHelper } from 'three-dxf-viewer';
 let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
 
 let snaps = new SnapsHelper( dxf, renderer, scene, camera, controls );
+snaps.subscribe( 'nearSnap', ( snap ) => {			
+	console.log( `distance from Mouse: ${snap.distance}, 3d entity: ${snap.snap.entity.uuid}, DXF entity: ${snap.snap.entity.userData.handle}` );
+} );
 
 ```
 
