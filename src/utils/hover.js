@@ -2,11 +2,12 @@ import { Raycaster } from '../tools/raycaster';
 
 export class Hover extends Raycaster {
 
-	constructor( container, camera, dxf3d, dxf,raycasting = null ) {
+	constructor( container, camera, dxf3d, dxf, raycasting = null ) {
 
 		super();
 		this.container = container;
 		this._clonedObjects = {};
+		this.dxf3d = dxf3d;
 		this.dxf = dxf;
 
 		//init raycasting
@@ -42,6 +43,17 @@ export class Hover extends Raycaster {
 	}
 
 	hover( obj, material = null ) {
+		
+
+		//dimensions are hovered with all the elements
+		let dim = null;
+		let parent = obj.parent;
+		while( dim === null && parent !== null ) {
+			if( parent.name === 'DIMENSION' ) dim = parent;
+			parent = parent.parent;
+		}
+
+		if( dim ) obj = dim;
 		
 		//clone first
 		if( !this._clonedObjects[ obj.uuid ] ) this._clonedObjects[ obj.uuid ] = { clone: this._clone( obj ), parent: obj.parent };

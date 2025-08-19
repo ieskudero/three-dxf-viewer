@@ -219,6 +219,17 @@ export class Select extends Raycaster {
 	select( obj, material = null ) {
 		const objs = obj instanceof Array ? obj : [ obj ];
 		objs.forEach( o => {
+
+			//dimensions are selected with all the elements
+			let dim = null;
+			let parent = o.parent;
+			while( dim === null && parent !== null ) {
+				if( parent.name === 'DIMENSION' ) dim = parent;
+				parent = parent.parent;
+			}
+
+			if( dim ) o = dim;
+
 			const clone = this._clone( o );
 			clone.selected = true;
 			clone.traverse( c => { if ( c.material ) c.material = material ? material : this._material; } );
