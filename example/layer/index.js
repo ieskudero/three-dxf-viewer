@@ -2,7 +2,7 @@ import { DXFViewer } from '../../src/dxfViewer.js';
 import { SnapsHelper } from '../../src/utils/snapsHelper.js';
 import { Boilerplate } from '../boilerplate.js';
 import GUI from 'lil-gui';
-import { CADControls } from '../../src/utils/CADControls.js';
+import { CADControls } from '../../src/utils/cadControls.js';
 
 import './index.css';
 
@@ -24,6 +24,9 @@ html.onLoad = async ( file ) => {
 		//Optional. Add control snap.
 		if( snaps ) snaps.clear();
 		snaps = new SnapsHelper( dxf, html.three.renderer, html.three.scene, html.three.camera, html.three.controls );
+		snaps.subscribe( 'nearSnap', ( snap ) => {			
+			console.log( `distance from Mouse: ${snap.distance}, 3d entity: ${snap.snap.entity.uuid}, DXF entity: ${snap.snap.entity.userData.handle}` );
+		} );
 
 		//Optional. Add CAD Controls
 		const controls = new CADControls( html.three.renderer.domElement, html.three.camera, dxf, viewer._lastDXF );

@@ -1,12 +1,13 @@
 import { BoxGeometry, Mesh, MeshBasicMaterial, Plane, Raycaster, Vector2, Vector3 } from 'three';
 import { Snaps } from '../tools/snaps.js';
+import { EventEmitter } from '../tools/eventEmitter.js';
 
 /**
  * @class Snapshelper
  * @classdesc Auxiliar class that shows how to use snaps and get entity information from snap point
  * 
  */
-export class SnapsHelper {
+export class SnapsHelper extends EventEmitter {
 	
 	/**
 	 * Constructor
@@ -17,7 +18,8 @@ export class SnapsHelper {
 	 * @param controls {THREE.OrbitControls} ThreeJS orbit controls.
 	*/
 	constructor( dxf, renderer, scene, camera, controls ) {
-		
+		super();
+
 		this.container = renderer.domElement;
 		this.scene = scene;
 		this.camera = camera;
@@ -52,7 +54,7 @@ export class SnapsHelper {
 	_mouseUp() {
 	}
 
-	_mouseMove( e ) {
+	async _mouseMove( e ) {
 
 		if( this.snaps ) {
 			e.mousePosInScene = this._getMousePosInScene( e );
@@ -65,7 +67,7 @@ export class SnapsHelper {
 				//si está a 5 unidades del punto hacemos snap y cambiamos el punto del ratón
 				if( nearestSnap.distance < 5 ) {
 					e.mousePosInScene = { x: nearestSnap.snap.point.x, y: nearestSnap.snap.point.y, z: nearestSnap.snap.point.z };
-					this._showSnapSquare( nearestSnap );
+					await this._showSnapSquare( nearestSnap );
 				}
 				else
 					this._hideSnapSquare();
@@ -98,7 +100,7 @@ export class SnapsHelper {
 		if( this._snapSquare ) this._snapSquare.visible = false;
 	}
 
-	_showSnapSquare( snap ) {
+	async _showSnapSquare( snap ) {
 		if( !this._snapSquare || this._changeSquareSize ) {
 			this._clearSnapSquare();
 			let size = this._getSize();
@@ -111,7 +113,7 @@ export class SnapsHelper {
 		this._snapSquare.position.copy( snap.snap.point );
 		this._snapSquare.visible = true;
 
-		console.log( `distance from Mouse: ${snap.distance}, 3d entity: ${snap.snap.entity.uuid}, DXF entity: ${snap.snap.entity.userData.handle}` );
+		await this.trigger( 'nearSnap', snap );
 	}
 
 	_getSize() {
