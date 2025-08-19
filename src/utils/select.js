@@ -2,15 +2,16 @@ import { Box3, Vector3 } from 'three';
 import { Raycaster } from '../tools/raycaster';
 
 export class Select extends Raycaster {
-	constructor( container, camera, dxf, raycasting = null ) {
+	constructor( container, camera, dxf3d, dxf, raycasting = null ) {
 		
 		super();
 		this.container = container;
 		this.camera = camera;
+		this.dxf3d = dxf3d;
 		this.dxf = dxf;
 
 		//init raycasting
-		this._initRaycasting( container, camera, dxf, raycasting );
+		this._initRaycasting( container, camera, dxf3d, raycasting );
 
 		//create orange hover material that will be seeen above all other materials
 		this._setMaterial( 0x0000ff );
@@ -82,7 +83,9 @@ export class Select extends Raycaster {
 			this.pointer.y = - ( y / this.container.clientHeight ) * 2 + 1;
 			
 			const intersected = await this.raycast.raycast( this.pointer );
-			if( intersected )  ss = intersected.object.parent;
+			if( intersected ) {
+				ss = this._isInsideEntityList( intersected.object ) ? intersected.object : intersected.object.parent;				
+			}
 		}
 
 		if( ss ) {
@@ -163,7 +166,7 @@ export class Select extends Raycaster {
 
 		const box = new Box3( this._boxHelpers.boxMin, this._boxHelpers.boxMax );
 
-		const blocks = this._getBlocksUnderBox( box, this.dxf );
+		const blocks = this._getBlocksUnderBox( box, this.dxf3d );
 
 		return blocks.length > 0 ? blocks : null;
 	}
@@ -173,17 +176,37 @@ export class Select extends Raycaster {
 		const blocks = [];
 		if( !root || !root.children ) return blocks;
 
-		if( root.name !== '' && this._fitInsideBox( box, root ) ) {
-			blocks.push( root );
-		} else {
-			for( let i = 0; i < root.children.length; i++ ) {
-				const child = root.children[ i ];
-				const b = this._getBlocksUnderBox( box, child );
-				if( b.length > 0 ) blocks.push( ...b );
+		if( this._fitInsideBox( box, root ) ) {
+			let inside = [];
+			this._getInsideElements( root, inside );
+			blocks.push( ...inside );
+			return blocks;
+		}
+		
+		for( let i = 0; i < root.children.length; i++ ) {
+			const child = root.children[ i ];
+			const b = this._getBlocksUnderBox( box, child );
+			for( let j = 0; j < b.length; j++ ) {					
+				let inside = [];
+				this._getInsideElements( b[j], inside );
+				if( inside.length > 0 ) blocks.push( ...inside );
 			}
 		}
 
 		return blocks;
+	}
+
+	_getInsideElements( element, inside ) {
+		if( this._isInsideEntityList( element ) ) {
+			inside.push( element );
+			return;
+		}
+
+		if( !element.children || element.children.length === 0 ) return;
+
+		for( let i = 0; i < element.children.length; i++ ) {
+			this._getInsideElements( element.children[i], inside );
+		}
 	}
 
 	_fitInsideBox( box, root ) {

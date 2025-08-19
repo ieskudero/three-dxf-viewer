@@ -93,9 +93,10 @@ The select class can be used to select entities in the scene. It will highlight 
 ```js
 import { Select, DXFViewer } from 'three-dxf-viewer';
 
-let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
+const viewer = new DXFViewer();
+let dxf = await viewer.getFromPath( dxfFilePath, fontPath );
 
-const select = new Select( three.renderer.domElement, three.camera, dxf );
+const select = new Select( three.renderer.domElement, three.camera, dxf, viewer._lastDXF );
 select.subscribe( 'select', ( selects ) => console.log( 'Selected entities', selects ) );
 
 scene.add( dxf );
@@ -108,10 +109,11 @@ The hover class will highlight the hovered entity by the mouse.
 ```js
 import { Hover, DXFViewer } from 'three-dxf-viewer';
 
-let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
+const viewer = new DXFViewer();
+let dxf = await viewer.getFromPath( dxfFilePath, fontPath );
 
-const hover = new Hover( three.renderer.domElement, three.camera, dxf );
-hover.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered ) );
+const hover = new Hover( three.renderer.domElement, three.camera, dxf, viewer._lastDXF );
+hover.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered.userData.entity ) );
 
 scene.add( dxf );
 

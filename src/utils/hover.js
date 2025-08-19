@@ -2,14 +2,15 @@ import { Raycaster } from '../tools/raycaster';
 
 export class Hover extends Raycaster {
 
-	constructor( container, camera, dxf, raycasting = null ) {
+	constructor( container, camera, dxf3d, dxf,raycasting = null ) {
 
 		super();
 		this.container = container;
 		this._clonedObjects = {};
+		this.dxf = dxf;
 
 		//init raycasting
-		this._initRaycasting( container, camera, dxf, raycasting );
+		this._initRaycasting( container, camera, dxf3d, raycasting );
 
 		//create orange hover material that will be seeen above all other materials
 		this._setMaterial( 0xffa500 );
@@ -32,7 +33,7 @@ export class Hover extends Raycaster {
 
 		this.removeHover();
 		if( intersected )  {
-			const obj = intersected.object.parent;
+			const obj = this._isInsideEntityList( intersected.object ) ? intersected.object : intersected.object.parent;
 			if( !obj.userData ) return;
 
 			this.hover( obj );			

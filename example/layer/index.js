@@ -27,11 +27,11 @@ html.onLoad = async ( file ) => {
 		snaps = new SnapsHelper( dxf, html.three.renderer, html.three.scene, html.three.camera, html.three.controls );
 
 		//Optional. Add Hover
-		const hover = new Hover( html.three.renderer.domElement, html.three.camera, dxf );
-		hover.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered ) );
+		const hover = new Hover( html.three.renderer.domElement, html.three.camera, dxf, viewer._lastDXF );
+		hover.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered.userData.entity ) );
 
 		//Optional. Add Selection
-		const select = new Select( html.three.renderer.domElement, html.three.camera, dxf );
+		const select = new Select( html.three.renderer.domElement, html.three.camera, dxf, viewer._lastDXF );
 		select.subscribe( 'select', ( selects ) => console.log( 'Selected entities', selects ) );
 
 		//get layer names

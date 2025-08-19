@@ -46,5 +46,12 @@ export class Raycaster extends EventEmitter {
 		this._material.color.setHex( hex );
 		this._material.color.convertSRGBToLinear();
 	}
+	
+	_isInsideEntityList( element ) {
+		//there is a list in the dxf file. We will see if the entity exist in it in order to select it.
+		const e = element.userData.entity;
+		if ( !e ) return false;
+		return this.dxf.entities.find( ent => ent === e || ent.block === e.name );
+	}
 
 }
