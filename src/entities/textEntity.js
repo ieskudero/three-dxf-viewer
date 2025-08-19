@@ -205,8 +205,6 @@ export class TextEntity extends BaseEntity {
 	_translateCenter( geometry, entity, center ) {
 
 		let attachmentPoint = entity.attachmentPoint;
-        
-		if( !attachmentPoint ) return;
 
 		geometry.computeBoundingBox();
 		let width = geometry.boundingBox.max.x - geometry.boundingBox.min.x;
@@ -217,6 +215,12 @@ export class TextEntity extends BaseEntity {
 			x: geometry.boundingBox.min.x + width / 2,
 			y: geometry.boundingBox.min.y + height / 2
 		};
+
+		
+		if( !attachmentPoint ) { // Bottom Left
+			geometry.translate( center.x - geometry.boundingBox.min.x , center.y - geometry.boundingBox.min.y , -0.5 * depth );
+			return;
+		}
 
 		switch ( attachmentPoint ) {
 		case 1:
