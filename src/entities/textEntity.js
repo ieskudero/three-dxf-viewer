@@ -10,8 +10,29 @@ import { Properties } from './baseEntity/properties';
  * @see {@link baseEntity/BaseEntity.md}
  * @classdesc DXF text, mtext && attrib entity class.
  */
+
 export class TextEntity extends BaseEntity {
 	
+	static #textHeight = 12;
+	static #textScale = 1;
+
+	static get TextHeight() {
+		return this.#textHeight;
+	}
+
+	static set TextHeight( value ) {
+		this.#textHeight = value || 12;
+	}
+
+
+	static get TextScale() {
+		return this.#textScale;
+	}
+
+	static set TextScale( value ) {
+		this.#textScale = value || 1;
+	}
+
 	constructor( data, font ) { 
 		super( data );
 		this._font = font;
@@ -117,11 +138,13 @@ export class TextEntity extends BaseEntity {
 	}
 
 	_getTextHeight( entity ) {
-		let textSize =  12;
+		let textSize =  TextEntity.TextHeight;
 		if ( typeof entity.nominalTextHeight !== 'undefined' )
 			textSize = entity.nominalTextHeight; 
 		else if ( typeof entity.textHeight !== 'undefined' )
 			textSize = entity.textHeight;
+
+		textSize *= TextEntity.TextScale;
 
 		return textSize;
 	}

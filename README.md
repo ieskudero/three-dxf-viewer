@@ -62,6 +62,19 @@ console.log( UNITS.Meters[ viewer.unit ] );
 // Or can be compared with UNITS
 console.log( viewer.unit === UNITS.Meters ? 'DXF on meters' : 'DXF on other units' );
 ```
+
+#### Default Text Height
+It sets the default text height fro text entities that doesn't have height specified.
+```js
+viewer.DefaultTextHeight = 12;
+```
+
+#### Default Text Scale
+It sets the default text scale for the DXF file (Default 1). It changes all the texts heights in the DXF file.
+```js 
+viewer.DefaultTextScale = 1;
+```
+
 #### Cache
 The viewer caches geometries by default. This can be changed to avoid it.
 ```js

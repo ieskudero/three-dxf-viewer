@@ -189,4 +189,18 @@ export class DXFViewer {
 			}
 		}
 	}
+
+	get DefaultTextHeight() {
+		return TextEntity.TextHeight;
+	}
+	set DefaultTextHeight( value ) {
+		TextEntity.TextHeight = value;
+	}
+
+	get DefaultTextScale() {
+		return TextEntity.TextScale;
+	}
+	set DefaultTextScale( value ) {
+		TextEntity.TextScale = value;
+	}
 }
