@@ -41,133 +41,154 @@ export class BlockEntity extends BaseEntity {
 			entities: []
 		};
         
-		for( let i = 0; i < entity.entities.length; i++ ) {
-			let _entity = entity.entities[i];
+		const hatchEntities = entity.entities.filter( e => e.type === 'HATCH' );
+		const nonHatchEntities = entity.entities.filter( e => e.type !== 'HATCH' );
+
+		//iterate over all non hatch entities, so when hatch comes, all other entities that could be boundaries are generated
+		for( let i = 0; i < nonHatchEntities.length; i++ ) {
+			let _entity = nonHatchEntities[i];
 
 			if( this._hideEntity( _entity ) ) continue;
-            
-			switch ( _entity.type ) {
-			case 'LINE': {
-				let _drawData = this._lineEntity.drawLine( _entity, extrusionZ );
 
-				let obj3d = new Line( _drawData.geometry, _drawData.material );
-				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
-				obj3d.userData = { entity: _entity };
-
-				group.add( obj3d );
-			} break;
-			case 'POLYLINE':
-			case 'LWPOLYLINE': {
-				let _drawData = this._lineEntity.drawPolyLine( _entity, extrusionZ );
-
-				let obj3d = new Line( _drawData.geometry, _drawData.material );
-				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
-				obj3d.userData = { entity: _entity };
-
-				group.add( obj3d );
-			} break;
-			case 'ARC':
-			case 'CIRCLE':  {
-				let _enti_drawDatay = this._circleEntity.drawCircle( _entity, extrusionZ );
-
-				let obj3d = new Line( _enti_drawDatay.geometry, _enti_drawDatay.material );
-				if( _enti_drawDatay.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
-				obj3d.userData = { entity: _entity };
-
-				group.add( obj3d );
-			} break;
-			case 'ELLIPSE': {
-				let _drawData = this._circleEntity.drawEllipse( _entity, extrusionZ );
-
-				let obj3d = new Line( _drawData.geometry, _drawData.material );
-				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
-				obj3d.userData = { entity: _entity };
-
-				group.add( obj3d );
-			} break;
-			case 'SPLINE': {
-				let _drawData = this._splineEntity.drawSpline( _entity, extrusionZ );
-
-				let obj3d = new Line( _drawData.geometry, _drawData.material );
-				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
-				obj3d.userData = { entity: _entity };
-
-				group.add( obj3d );
-			} break;
-			case 'SOLID': {
-				let _drawData = this._solidEntity.drawSolid( _entity, extrusionZ );
-
-				let obj3d = new Mesh( _drawData.geometry, _drawData.material );
-				obj3d.userData = { entity: _entity };
-
-				group.add( obj3d );
-			} break;
-			case 'ATTRIB':
-			case 'TEXT':
-			case 'MTEXT': {
-				let _drawData = this._textEntity.drawText( _entity, extrusionZ );
-
-				let obj3d = new Mesh( _drawData.geometry, _drawData.material );
-				obj3d.userData = { entity: _entity };
-
-				group.add( obj3d );
-			} break;
-			case 'INSERT': {
-				let block = _entity.blockObj ? _entity.blockObj : this._getBlock( this.data.blocks, _entity.block );
-				if( block && block.entities.length > 0 && !this._hideBlockEntity( block ) ) {
-					let obj3d = new Group();
-					obj3d.name = 'INSERT';
-					obj3d.add( this.drawBlock( block, extrusionZ ) );
-					obj3d.userData = { entity: _entity };
-
-					let sx = _entity.scaleX ? _entity.scaleX : 1;
-					let sy = _entity.scaleY ? _entity.scaleY : 1;
-					let sz = _entity.scaleZ ? _entity.scaleZ : 1;
-                        
-					_entity.extrusionZ = _entity.extrusionZ < 0 ? -1 : 1;
-
-					obj3d.scale.set( _entity.extrusionZ * sx, sy, sz );
-
-					if ( _entity.rotation ) {
-						obj3d.rotation.z = _entity.extrusionZ * _entity.rotation * Math.PI / 180;
-					}
-                        
-					obj3d.position.set( _entity.extrusionZ * _entity.x, _entity.y, _entity.z );
-                    
-					group.add( obj3d );
-				}
-			} break;
-			case 'HATCH': {
-				let _drawData = this._hatchEntity.drawHatch( _entity, extrusionZ );
-
-				if( _drawData.geometry ) {
-					let obj3d = _entity.fillType === 'SOLID' ? new Mesh( _drawData.geometry, _drawData.material ) : new LineSegments( _drawData.geometry, _drawData.material );
-					if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
-					obj3d.userData = { entity: _entity };
-					obj3d.renderOrder = _entity.fillType === 'SOLID' ? -1 : 0;
-					obj3d.position.z = _entity.fillType === 'SOLID' ? -0.1 : 0;
-
-					group.add( obj3d );
-				}
-			} break;
-			case 'POINT': {
-				//we don't draw anything. We don't need points
-			} break;
-			case 'ATTDEF': {
-				//we don't draw anything, text is drawn in textEntity.js
-			} break;
-			case 'DIMENSION': {
-				//we don't draw anything, all dimension related entities are drawn in each case
-			} break;
-			default: {
-				console.log( 'unknown entity type: ' + _entity.type );
-			} break;
-			}
+			const obj3d = this._generateBlock3d( _entity, extrusionZ );
+			if( obj3d ) group.add( obj3d );
 		}
+		for( let i = 0; i < hatchEntities.length; i++ ) {
+			let _entity = hatchEntities[i];
+
+			if( this._hideEntity( _entity ) ) continue;
+
+			const obj3d = this._generateBlock3d( _entity, extrusionZ, group.children );
+			if( obj3d ) group.add( obj3d );
+		}
+
+
 
 		this._mergeGroup( group );
 
 		return group;
+	}
+
+	_generateBlock3d( entity, extrusionZ, entities3d ) {
+		switch ( entity.type ) {
+		case 'LINE': {
+			let _drawData = this._lineEntity.drawLine( entity, extrusionZ );
+
+			let obj3d = new Line( _drawData.geometry, _drawData.material );
+			if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
+			obj3d.userData = { entity: entity };
+
+			return obj3d;
+		}
+		case 'POLYLINE':
+		case 'LWPOLYLINE': {
+			let _drawData = this._lineEntity.drawPolyLine( entity, extrusionZ );
+
+			let obj3d = new Line( _drawData.geometry, _drawData.material );
+			if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
+			obj3d.userData = { entity: entity };
+
+			return obj3d;
+		}
+		case 'ARC':
+		case 'CIRCLE':  {
+			let _enti_drawDatay = this._circleEntity.drawCircle( entity, extrusionZ );
+
+			let obj3d = new Line( _enti_drawDatay.geometry, _enti_drawDatay.material );
+			if( _enti_drawDatay.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
+			obj3d.userData = { entity: entity };
+
+			return obj3d;
+		}
+		case 'ELLIPSE': {
+			let _drawData = this._circleEntity.drawEllipse( entity, extrusionZ );
+
+			let obj3d = new Line( _drawData.geometry, _drawData.material );
+			if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
+			obj3d.userData = { entity: entity };
+
+			return obj3d;
+		}
+		case 'SPLINE': {
+			let _drawData = this._splineEntity.drawSpline( entity, extrusionZ );
+
+			let obj3d = new Line( _drawData.geometry, _drawData.material );
+			if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
+			obj3d.userData = { entity: entity };
+
+			return obj3d;
+		}
+		case 'SOLID': {
+			let _drawData = this._solidEntity.drawSolid( entity, extrusionZ );
+
+			let obj3d = new Mesh( _drawData.geometry, _drawData.material );
+			obj3d.userData = { entity: entity };
+
+			return obj3d;
+		}
+		case 'ATTRIB':
+		case 'TEXT':
+		case 'MTEXT': {
+			let _drawData = this._textEntity.drawText( entity, extrusionZ );
+			if( !_drawData ) return null;
+
+			let obj3d = new Mesh( _drawData.geometry, _drawData.material );
+			obj3d.userData = { entity: entity };
+
+			return obj3d;
+		}
+		case 'INSERT': {
+			let block = entity.blockObj ? entity.blockObj : this._getBlock( this.data.blocks, entity.block );
+			if( block && block.entities.length > 0 && !this._hideBlockEntity( block ) ) {
+				let obj3d = new Group();
+				obj3d.name = 'INSERT';
+				obj3d.add( this.drawBlock( block, extrusionZ ) );
+				obj3d.userData = { entity: entity };
+
+				let sx = entity.scaleX ? entity.scaleX : 1;
+				let sy = entity.scaleY ? entity.scaleY : 1;
+				let sz = entity.scaleZ ? entity.scaleZ : 1;
+                        
+				entity.extrusionZ = entity.extrusionZ < 0 ? -1 : 1;
+
+				obj3d.scale.set( entity.extrusionZ * sx, sy, sz );
+
+				if ( entity.rotation ) {
+					obj3d.rotation.z = entity.extrusionZ * entity.rotation * Math.PI / 180;
+				}
+                        
+				obj3d.position.set( entity.extrusionZ * entity.x, entity.y, entity.z );
+                    
+				return obj3d;
+			}
+		} break;
+		case 'HATCH': {
+			let _drawData = this._hatchEntity.drawHatch( entity, entities3d );
+
+			if( _drawData.geometry && _drawData.geometry.attributes.position.count > 0 ) {
+				let obj3d = entity.fillType === 'SOLID' ? new Mesh( _drawData.geometry, _drawData.material ) : new LineSegments( _drawData.geometry, _drawData.material );
+				if( _drawData.material.type === 'LineDashedMaterial' ) this._geometryHelper.fixMeshToDrawDashedLines( obj3d );
+				obj3d.userData = { entity: entity };
+				obj3d.renderOrder = entity.fillType === 'SOLID' ? -1 : 0;
+				obj3d.position.z = entity.fillType === 'SOLID' ? -0.1 : 0;
+
+				return obj3d;
+			}
+		} break;
+		case 'POINT': {
+			//we don't draw anything. We don't need points
+		} break;
+		case 'ATTDEF': {
+			//we don't draw anything, text is drawn in textEntity.js
+		} break;
+		case 'DIMENSION': {
+			//we don't draw anything, all dimension related entities are drawn in each case
+		} break;
+		default: {
+			console.log( 'unknown entity type: ' + entity.type );
+		} break;
+		}
+		return null;
 	}
 	
 	_rotate( obj3d, rotation ) {

@@ -57,7 +57,7 @@ export class HatchEntity extends BaseEntity {
 				geometry = cached.geometry;
 				material = cached.material;
 			} else {
-				let _drawData = this.drawHatch( entity );
+				let _drawData = this.drawHatch( entity, entities );
 				geometry = _drawData.geometry;
 				material = _drawData.material;
                 
@@ -84,7 +84,7 @@ export class HatchEntity extends BaseEntity {
 	 * @param entity {entity} dxf parsed hatch entity.
      * @return {Object} object composed as {geometry: THREE.Geometry, material: THREE.Material}
 	*/
-	drawHatch( entity ) {
+	drawHatch( entity, referenceEntities3d ) {
         
 
 		let geometry = null;
@@ -98,12 +98,12 @@ export class HatchEntity extends BaseEntity {
 
 		if( entity.fillType === 'SOLID' ) {
             
-			geometry = this._generateBoundary( entity );
+			geometry = this._generateBoundary( entity, referenceEntities3d );
 			material = this._colorHelper.getMaterial( entity, 'shape', this.data.tables );
 		}
 		else if( entity.fillType === 'PATTERN' ) {
 
-			geometry = this._generatePatternGeometry( entity );
+			geometry = this._generatePatternGeometry( entity, referenceEntities3d );
 			material = this._colorHelper.getMaterial( entity, 'line', this.data.tables );
 		}
         
@@ -194,7 +194,7 @@ export class HatchEntity extends BaseEntity {
 		);
 	}
 
-	_generateBoundary( entity ) {
+	_generateBoundary( entity, referenceEntities3d ) {
 
 		const boundary = entity.boundary;
 
@@ -371,7 +371,7 @@ export class HatchEntity extends BaseEntity {
 		}
 	}
 
-	_generatePatternGeometry( entity ) {
+	_generatePatternGeometry( entity, referenceEntities3d ) {
 		const pattern = entity.pattern;
 		const angleRad = pattern.angle * Math.PI / 180;
 		const dir = new Vector2( Math.cos( angleRad ), Math.sin( angleRad ) );
@@ -402,6 +402,13 @@ export class HatchEntity extends BaseEntity {
 			if ( hp.length > 0 ) holePolygons.push( hp );
 		}
 
+		// boundary polygons, to take into account in order to clip the pattern		
+		// fill the boundaries with arrays of Vector3 for each geometry an take them into account for positions clipping. 
+		// If there is an index in the geometry, take that into account for creating the array from the geometry
+		const boundaries = this._collectReferencedPolylines( referenceEntities3d );
+		//TODO use them to cut the pattern lines
+
+
 		let minProj = Infinity;
 		let maxProj = -Infinity;
 		for ( let p of polygon ) {
@@ -429,31 +436,13 @@ export class HatchEntity extends BaseEntity {
 
 			// Intersections with outer
 			for ( let i = 0; i < polygon.length; i++ ) {
-				const p1 = new Vector2( polygon[i].x, polygon[i].y );
-				const p2 = new Vector2( polygon[( i + 1 ) % polygon.length].x, polygon[( i + 1 ) % polygon.length].y );
-				const den = p2.clone().sub( p1 ).dot( perpNormalized );
-				if ( Math.abs( den ) < 1e-6 ) continue;
-				const num = offset - p1.dot( perpNormalized );
-				const t = num / den;
-				if ( t >= 0 && t <= 1 ) {
-					const intPoint = p1.clone().add( p2.clone().sub( p1 ).multiplyScalar( t ) );
-					intersections.push( intPoint );
-				}
+				this._intersect( polygon, i, perpNormalized, offset, intersections );
 			}
 
 			// Intersections with holes
 			for ( let hole of holePolygons ) {
 				for ( let i = 0; i < hole.length; i++ ) {
-					const p1 = new Vector2( hole[i].x, hole[i].y );
-					const p2 = new Vector2( hole[( i + 1 ) % hole.length].x, hole[( i + 1 ) % hole.length].y );
-					const den = p2.clone().sub( p1 ).dot( perpNormalized );
-					if ( Math.abs( den ) < 1e-6 ) continue;
-					const num = offset - p1.dot( perpNormalized );
-					const t = num / den;
-					if ( t >= 0 && t <= 1 ) {
-						const intPoint = p1.clone().add( p2.clone().sub( p1 ).multiplyScalar( t ) );
-						intersections.push( intPoint );
-					}
+					this._intersect( hole, i, perpNormalized, offset, intersections );
 				}
 			}
 
@@ -485,6 +474,19 @@ export class HatchEntity extends BaseEntity {
 		return geometry;
 	}
 
+	_intersect( arr, i, perpNormalized, offset, intersections = [] ) {
+		const p1 = new Vector2( arr[i].x, arr[i].y );
+		const p2 = new Vector2( arr[( i + 1 ) % arr.length].x, arr[( i + 1 ) % arr.length].y );
+		const den = p2.clone().sub( p1 ).dot( perpNormalized );
+		if ( Math.abs( den ) < 1e-6 ) return;
+		const num = offset - p1.dot( perpNormalized );
+		const t = num / den;
+		if ( t >= 0 && t <= 1 ) {
+			const intPoint = p1.clone().add( p2.clone().sub( p1 ).multiplyScalar( t ) );
+			intersections.push( intPoint );
+		}
+	}
+
 	_signedArea( points ) {
 		let area = 0;
 		for ( let i = 0; i < points.length; i++ ) {
@@ -494,4 +496,196 @@ export class HatchEntity extends BaseEntity {
 		}
 		return area / 2;
 	}
+
+	/**
+	 * Clip hatch 'positions' by crossings against:
+	 *  - the primary outer polygon
+	 *  - the hole polygons
+	 *  - and extra polylines extracted from referenced boundary geometry
+	 *
+	 * @param {Array<{x:number,y:number}>} polygon
+	 * @param {Array<Array<{x:number,y:number}>>} holePolygons
+	 * @param {Float32Array|number[]} positions  // [x0,y0,0, x1,y1,0, ...]
+	 * @param {Vector3[][]} referencedPolylines  // output of _collectReferencedPolylines
+	 * @param {0|1} style                        // 0=even-odd, 1=non-zero
+	 * @returns {Float32Array}
+	 */
+	_clipPositionsWithReferencedBoundaries( polygon, holePolygons, referencedPolylines, positions, style = 0 ) {
+		const EPS = 1e-9;
+
+		const cross = ( a,b ) => a.x*b.y - a.y*b.x;
+
+		function segInterT( p, r, q, s ) {
+			const rxs = cross( r, s );
+			const qmp = { x: q.x - p.x, y: q.y - p.y };
+			if ( Math.abs( rxs ) < EPS ) return null; // parallel or colinear => ignore for cutting
+			const t = cross( qmp, s ) / rxs;
+			const u = cross( qmp, r ) / rxs;
+			if ( t >= -EPS && t <= 1 + EPS && u >= -EPS && u <= 1 + EPS ) return Math.min( Math.max( t, 0 ), 1 );
+			return null;
+		}
+
+		function pointInRing_evenOdd( pt, ring ) {
+			let inside = false;
+			for ( let i = 0, n = ring.length; i < n; i++ ) {
+				const a = ring[i], b = ring[( i+1 )%n];
+				const yi = a.y, yj = b.y;
+				const xi = a.x, xj = b.x;
+				const inter = ( ( yi > pt.y ) !== ( yj > pt.y ) ) &&
+                    ( pt.x < ( xj - xi ) * ( pt.y - yi ) / ( yj - yi ) + xi );
+				if ( inter ) inside = !inside;
+			}
+			return inside;
+		}
+		function pointInRing_nonZero( pt, ring ) {
+			let w = 0;
+			for ( let i = 0, n = ring.length; i < n; i++ ) {
+				const a = ring[i], b = ring[( i + 1 ) % n];
+				const ab = { x: b.x - a.x, y: b.y - a.y };
+				if ( a.y <= pt.y && b.y >  pt.y && cross( ab, { x: pt.x - a.x, y: pt.y - a.y } ) > 0 ) w++;
+				else if ( b.y <= pt.y && a.y > pt.y && cross( ab, { x: pt.x - a.x, y: pt.y - a.y } ) < 0 ) w--;
+			}
+			return w !== 0;
+		}
+		const pointInRing = ( style === 1 ) ? pointInRing_nonZero : pointInRing_evenOdd;
+
+		function isInside( pt ) {
+			if ( !pointInRing( pt, polygon ) ) return false;
+			for ( const h of holePolygons ) if ( pointInRing( pt, h ) ) return false;
+			return true;
+		}
+
+		function edgesFromRing( ring ) {
+			const e = [];
+			for ( let i = 0; i < ring.length; i++ ) e.push( [ ring[i], ring[( i+1 )%ring.length] ] );
+			return e;
+		}
+		function edgesFromPolyline( poly ) {
+			const e = [];
+			for ( let i = 0; i + 1 < poly.length; i++ ) {
+				const a = poly[i], b = poly[i+1];
+				e.push( [ { x:a.x, y:a.y }, { x:b.x, y:b.y } ] );
+			}
+			return e;
+		}
+
+		// Build one big list of cutting edges
+		const outerEdges = edgesFromRing( polygon );
+		const holeEdges  = holePolygons.flatMap( edgesFromRing );
+		const refEdges   = ( Array.isArray( referencedPolylines ) ? referencedPolylines : [] )
+			.flatMap( edgesFromPolyline );
+
+		const allEdges = outerEdges.concat( holeEdges, refEdges );
+
+		// Cut each incoming hatch segment
+		const out = [];
+		for ( let i = 0; i + 5 < positions.length; i += 6 ) {
+			const p0 = { x: positions[i],   y: positions[i+1] };
+			const p1 = { x: positions[i+3], y: positions[i+4] };
+			const r  = { x: p1.x - p0.x, y: p1.y - p0.y };
+
+			// collect intersection parameters along segment
+			const ts = [ 0, 1 ];
+
+			for ( const [ a, b ] of allEdges ) {
+				const s = { x: b.x - a.x, y: b.y - a.y };
+				const t = segInterT( p0, r, a, s );
+				if ( t === null ) continue;
+				// dedupe near endpoints
+				let dup = false;
+				for ( let j = 0; j < ts.length; j++ ) if ( Math.abs( ts[j] - t ) < 1e-8 ) { dup = true; break; }
+				if ( !dup ) ts.push( t );
+			}
+
+			ts.sort( ( A, B ) => A - B );
+
+			// create subsegments and keep those whose midpoints are inside
+			for ( let j = 0; j + 1 < ts.length; j++ ) {
+				const t0 = ts[j], t1 = ts[j+1];
+				if ( t1 - t0 <= 1e-10 ) continue;
+				const mid = ( t0 + t1 ) * 0.5;
+				const m = { x: p0.x + r.x * mid, y: p0.y + r.y * mid };
+				if ( !isInside( m ) ) continue;
+
+				const A = { x: p0.x + r.x * t0, y: p0.y + r.y * t0 };
+				const B = { x: p0.x + r.x * t1, y: p0.y + r.y * t1 };
+				out.push( A.x, A.y, 0, B.x, B.y, 0 );
+			}
+		}
+
+		return new Float32Array( out );
+	}
+
+
+	/**
+	 * Convert a THREE.BufferGeometry (indexed or not) into one or more polylines.
+	 * Each polyline is returned as an array of THREE.Vector3.
+	 * - If geometry has an index, we follow the index order and split when the
+	 *   path breaks (non-consecutive jump).
+	 * - If no index, we read the position array in order.
+	 * - If the geometry represents triangles, this still works because we split
+	 *   on breaks; for clean results you should pass line/outline geometries.
+	 */
+	_geometryToVector3Arrays( geometry ) {
+		if ( !geometry ) return [];
+
+		const posAttr = geometry.getAttribute( 'position' );
+		if ( !posAttr ) return [];
+
+		const positions = posAttr.array;
+		const itemSize = posAttr.itemSize || 3;
+
+		// Helper to push a point from positions array
+		const pointAt = ( i, out = new Vector3() ) => {
+			const j = i * itemSize;
+			return out.set( positions[j], positions[j + 1], positions[j + 2] || 0 );
+		};
+
+		const polylines = [];
+
+		if ( geometry.index && geometry.index.count ) {
+			// Indexed geometry
+			const idx = geometry.index.array;
+			let current = [];
+			let last = -1;
+
+			for ( let k = 0; k < idx.length; k++ ) {
+				const i = idx[k];
+
+				// New strip if jump in index (prevents accidental stitching through triangles)
+				if ( last >= 0 && Math.abs( i - last ) > 1 ) {
+					if ( current.length > 1 ) polylines.push( current );
+					current = [];
+				}
+				current.push( pointAt( i, new Vector3() ) );
+				last = i;
+			}
+			if ( current.length > 1 ) polylines.push( current );
+		} else {
+			// Non-indexed: assume consecutive positions describe a polyline
+			const n = Math.floor( positions.length / itemSize );
+			const line = [];
+			for ( let i = 0; i < n; i++ ) line.push( pointAt( i, new Vector3() ) );
+			if ( line.length > 1 ) polylines.push( line );
+		}
+
+		return polylines;
+	}
+
+	/**
+	 * Convert an array of objects that contain `.geometry` into Vector3[][].
+	 * Each entry may look like { geometry: BufferGeometry, ... }.
+	 * You can pass in any extra fields – they’re ignored.
+	 */
+	_collectReferencedPolylines( refEntities ) {
+		const out = [];
+		if ( !Array.isArray( refEntities ) ) return out;
+		for ( const ref of refEntities ) {
+			if ( !ref || !ref.geometry ) continue;
+			const parts = this._geometryToVector3Arrays( ref.geometry );
+			for ( const poly of parts ) if ( poly.length > 1 ) out.push( poly );
+		}
+		return out;
+	}
+
 }
