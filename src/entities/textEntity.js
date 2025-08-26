@@ -66,6 +66,8 @@ export class TextEntity extends BaseEntity {
 				material = cached.material;
 			} else {
 				let _drawData = this.drawText( entity );
+				if( !_drawData ) continue;
+				
 				geometry = _drawData.geometry;
 				material = _drawData.material;
                 
@@ -99,6 +101,7 @@ export class TextEntity extends BaseEntity {
 
 		//get string
 		let geometry = this._getTextGeometry( entity );
+		if( !geometry ) return null;
 
 		this._scaleText( geometry, entity );
         
@@ -119,7 +122,8 @@ export class TextEntity extends BaseEntity {
 
 	_getTextGeometry( entity ) {
 		let strings = this._getTextStrings( entity );
-        
+		if( strings.length === 0 ) return null
+		;
 		//TODO: if any string's width exceeds entity.refRectangleWidth we must cut it
 		let text = strings.join( '' );
 
@@ -163,6 +167,9 @@ export class TextEntity extends BaseEntity {
 
 	_getTextStrings( entity ) {
         
+		//can come without string
+		if( typeof entity.string === 'undefined' ) return []; 
+
 		let getContent = ( entities ) => {
 			let strs = [];
 			for ( let i = 0; i < entities.length; i++ ) {
@@ -180,7 +187,7 @@ export class TextEntity extends BaseEntity {
 
 			return strs;            
 		};
-
+		
 		let parser = new MTextFormatParser().Parse( entity.string );
 		let text = getContent( parser.entities );
 
