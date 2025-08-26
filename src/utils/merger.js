@@ -120,16 +120,13 @@ export class Merger {
 
 			} else {
 				//LINE
-				if ( child.geometry.index ) {
-					child.geometry = child.geometry.toNonIndexed();
-				}
-				child.computeLineDistances();
 				geometry = child.geometry.clone();
 				geometry.applyMatrix4( child.matrixWorld );
-				this._indexLineGeometry( geometry );
+				if ( !geometry.index ) this._indexLineGeometry( geometry );
 
-				//JUST IN CASE, WE REMOVE NORMAL & UV. I THINK THEY ARE NOT NEEDED. 
+				//JUST IN CASE, WE REMOVE LINEDISTANCE, NORMAL & UV. I THINK THEY ARE NOT NEEDED. 
 				//IF THEY ARE, ADD THEM TO THOSE IN NEED INSTEAD OF REMOVING THEM FROM THOSE HAVING THEM
+				geometry.deleteAttribute( 'lineDistance' );
 				geometry.deleteAttribute( 'uv' );
 				geometry.deleteAttribute( 'normal' );
 				
@@ -206,7 +203,7 @@ export class Merger {
 				index.push( i );
 			}
 		}
-		geometry.setIndex( new BufferAttribute( new Uint16Array( index ), 1 ) );
+		if( !geometry.index ) geometry.setIndex( new BufferAttribute( new Uint16Array( index ), 1 ) );
 	}
 
 	//USE THIS INSTEAD OF Array.find: FOR BETTER PERFORMANCE
