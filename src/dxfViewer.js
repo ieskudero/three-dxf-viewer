@@ -152,8 +152,6 @@ export class DXFViewer {
 		if( inserts ) group.add( inserts );
 		if( hatchs ) group.add( hatchs );
 
-		//this._writeCount( lines, circles, splines, solids, dimensions, texts, inserts );
-
 		this._rotateByView( group, data );
 
 		return group;
@@ -194,16 +192,6 @@ export class DXFViewer {
 			console.log( e );
 			this._font = null;
 		}
-	}
-
-	_writeCount( lines, circles, splines, solids, dimensions, texts, inserts ) {
-		if( lines ) console.log( 'lines ', lines.children.length );
-		if( circles ) console.log( 'circles ', circles.children.length );
-		if( splines ) console.log( 'splines ', splines.children.length );
-		if( solids ) console.log( 'solids ', solids.children.length );
-		if( dimensions ) console.log( 'dimensions ', dimensions.children.length );
-		if( texts ) console.log( 'texts ', texts.children.length );
-		if( inserts ) console.log( 'inserts ', inserts.children.length );
 	}
 
 	_rotateByView( group, data ) {

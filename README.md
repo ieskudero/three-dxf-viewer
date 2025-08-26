@@ -92,7 +92,7 @@ import { CADControls, DXFViewer } from 'three-dxf-viewer';
 const viewer = new DXFViewer();
 let dxf = await viewer.getFromPath( dxfFilePath, fontPath );
 
-const controls = new CADControls( three.renderer.domElement, three.camera, dxf, viewer._lastDXF );
+const controls = new CADControls( three.renderer.domElement, three.camera, dxf, viewer.lastDXF );
 controls.subscribe( 'select', ( selects ) => console.log( 'Selected entities', selects ) );
 controls.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered.userData.entity ) );
 
@@ -127,7 +127,7 @@ import { Select, DXFViewer } from 'three-dxf-viewer';
 const viewer = new DXFViewer();
 let dxf = await viewer.getFromPath( dxfFilePath, fontPath );
 
-const select = new Select( three.renderer.domElement, three.camera, dxf, viewer._lastDXF );
+const select = new Select( three.renderer.domElement, three.camera, dxf, viewer.lastDXF );
 select.subscribe( 'select', ( selects ) => console.log( 'Selected entities', selects ) );
 
 scene.add( dxf );
@@ -143,7 +143,7 @@ import { Hover, DXFViewer } from 'three-dxf-viewer';
 const viewer = new DXFViewer();
 let dxf = await viewer.getFromPath( dxfFilePath, fontPath );
 
-const hover = new Hover( three.renderer.domElement, three.camera, dxf, viewer._lastDXF );
+const hover = new Hover( three.renderer.domElement, three.camera, dxf, viewer.lastDXF );
 hover.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered.userData.entity ) );
 
 scene.add( dxf );

@@ -74,7 +74,7 @@ export class Select extends Raycaster {
 			if( objs ) ss = objs;
 		} else {
 
-			var rect = event.target.getBoundingClientRect();
+			let rect = event.target.getBoundingClientRect();
 			const x = event.clientX - rect.left;
 			const y = event.clientY - rect.top;
 			
@@ -101,7 +101,7 @@ export class Select extends Raycaster {
 	async _onPointerMove( event ) {
 
 		if( this._onSelectionBox ) {
-			var rect = event.target.getBoundingClientRect();
+			let rect = event.target.getBoundingClientRect();
 			const x = event.clientX - rect.left;
 			const y = event.clientY - rect.top;
 

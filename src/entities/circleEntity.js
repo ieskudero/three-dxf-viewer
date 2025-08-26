@@ -100,7 +100,7 @@ export class CircleEntity extends BaseEntity {
 		);
 
 		let points = curve.getPoints( 32 );
-		var geometry = new BufferGeometry().setFromPoints( points );
+		let geometry = new BufferGeometry().setFromPoints( points );
 		geometry.setIndex( new BufferAttribute( new Uint16Array( this._geometryHelper.generatePointIndex( points ) ), 1 ) );
     
 		let center = {
