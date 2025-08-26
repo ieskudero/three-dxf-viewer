@@ -495,7 +495,10 @@ export class HatchEntity extends BaseEntity {
 		const positions = [];
 		const margin = 1;
 
-		for ( let k = startK; k <= endK; k++ ) {
+		const lineCount = endK - startK;
+		let incr = lineCount > 1000 ? Math.ceil( lineCount / 1000 ): 1;  //limit to 1000 incrementing more than one
+
+		for ( let k = startK; k <= endK; k+=incr ) {
 			const t = baseProj + k * spacing;
 			const s0 = minS - margin, s1 = maxS + margin;
 
