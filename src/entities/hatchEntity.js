@@ -140,7 +140,7 @@ export class HatchEntity extends BaseEntity {
 
 	_calculatePoints( entity ) {
 		const boundary = entity.boundary;
-		for ( let i = 0; i < boundary.count; i++ ) {
+		for ( let i = 0; i < boundary.loops.length; i++ ) {
 			const loop = boundary.loops[i];
 			for ( let j = 0; j < loop.entities.length; j++ ) {
 				let ent = loop.entities[j];
@@ -346,7 +346,7 @@ export class HatchEntity extends BaseEntity {
             
 				if( !entity.points ) continue;
 
-				let lastPoint = points.length > 0 ? points[points.length - 1] : null;
+				let lastPoint = entity.points.length > 0 ? entity.points[entity.points.length - 1] : null;
 				for ( let j = 0; j < entity.points.length; j++ ) {
 					const point = entity.points[j];
 					if( j === 0 && ( lastPoint && lastPoint.x === point.x && lastPoint.y === point.y ) ) continue;
@@ -359,16 +359,20 @@ export class HatchEntity extends BaseEntity {
 
 	_orderEntityPoints( entities ) {
 		let ordered = [];
-		ordered.push( entities[0] );
+
+		const noEmptyEntities = entities.filter( entity => entity.points && entity.points.length > 0 );
+		if( noEmptyEntities.length === 0 ) return [];
 		
-		let lastEntity = ordered[0];
-		while( ordered.length < entities.length ) {
+		ordered.push( noEmptyEntities[0] );
+
+		let lastEntity = noEmptyEntities[0];
+		while( ordered.length < noEmptyEntities.length ) {
 
 			let entityFirstPoint = lastEntity.points[0];
 			let entityLastPoint = lastEntity.points[lastEntity.points.length - 1];
 			const initialLengh = ordered.length;
-			for ( let i = ordered.length; i < entities.length; i++ ) {
-				const entity = entities[i];
+			for ( let i = ordered.length; i < noEmptyEntities.length; i++ ) {
+				const entity = noEmptyEntities[i];
 				if( !entity ) continue;
 				if( this._samePoints( entityLastPoint, entity.points[0] ) ) {
 					ordered.push( entity );

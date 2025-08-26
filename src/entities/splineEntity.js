@@ -74,7 +74,7 @@ export class SplineEntity extends BaseEntity {
 
 		let material = this._colorHelper.getMaterial( entity, lineType, this.data.tables );
 		
-		var points = this.getBSplinePolyline( entity.controlPoints, entity.degree, entity.knots, entity.weights );
+		let points = this.getBSplinePolyline( entity.controlPoints, entity.degree, entity.knots, entity.weights );
 
 		let geometry = new BufferGeometry().setFromPoints( points );
 		geometry.setIndex( new BufferAttribute( new Uint16Array( this._geometryHelper.generatePointIndex( points ) ), 1 ) );
@@ -107,6 +107,7 @@ export class SplineEntity extends BaseEntity {
 				t = Math.max( t, 0 );
 				t = Math.min( t, 1 );
 				const p = bSpline.default( t, degree, controlPointsForLib, knots, weights );
+				if( isNaN( p[0] ) || isNaN( p[1] ) ) continue;
 				polyline.push( new Vector3( p[0], p[1], 0 ) );
 			}
 		}
