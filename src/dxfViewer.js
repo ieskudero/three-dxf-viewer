@@ -25,7 +25,7 @@ export class DXFViewer {
     
 	constructor() {
 
-		this._cache = {};
+		this._cache = new Map();
 		this.useCache = true;
 
 		this.colorHelper = new ColorHelper();
@@ -160,12 +160,19 @@ export class DXFViewer {
 	}
     
 	_toCache( path, data ) {
-		this._cache[this._replaceEspecialChars( path )] = data;
+		this._cache.set( this._replaceEspecialChars( path ),  new WeakRef( data ) );
 	}
 
 	_fromCache( path ) {
-		let cached = this._cache[this._replaceEspecialChars( path )];
-		return cached ? cached : null;
+		const key = this._replaceEspecialChars( path );
+		if ( this._cache.has( key ) ) {
+			const dereferencedValue = this._cache.get( key ).deref();
+			if ( dereferencedValue !== undefined ) {
+				return dereferencedValue;
+			}
+		}
+		
+		return null;
 	}
 
 	_replaceEspecialChars( str ) {

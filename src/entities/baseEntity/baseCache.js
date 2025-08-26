@@ -1,6 +1,6 @@
 import { Properties } from './properties.js';
 
-var __cache = {};
+var __cache = new Map();
 var __index = 1;
 
 /**
@@ -19,7 +19,16 @@ export class BaseCache {
      * @return {Object} object  usually composed as {geometry: THREE.Geometry, material: THREE.Material}
 	*/
 	_getCached( entity ) {
-		return entity._cache && Properties.cache ? __cache[entity._cache] : null;
+		if( !entity._cache || !Properties.cache ) return null;
+		const key = entity._cache;
+		if ( this._cache.has( key ) ) {
+			const dereferencedValue = this._cache.get( key ).deref();
+			if ( dereferencedValue !== undefined ) {
+				return dereferencedValue;
+			}
+		}
+		
+		return null;		
 	}
 
 	/**
@@ -28,9 +37,10 @@ export class BaseCache {
 	 * @param model {Object} object to be stored. usually an object composed as {geometry: THREE.Geometry, material: THREE.Material}.
 	*/
 	_setCache( entity, model ) {
-		entity._cache = 'e' + __index;
+		const key = 'e' + __index;
+		entity._cache = key;
 		__index ++;
-		__cache[entity._cache] = model;
+		__cache.set( key, model );
 	}	
 
 }
