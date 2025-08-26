@@ -118,7 +118,22 @@ export class DXFViewer {
 		dimensions = dimensions.draw( data );
 		texts = texts.draw( data );
 		inserts = inserts.draw( data, data );
-		hatchs = hatchs.draw( data );
+		hatchs = hatchs.draw( data, refs => {
+			const refEntities = [];
+			const add = array => {
+				array.forEach( e => {
+					if( refs.includes( e.userData.entity.handle ) ) refEntities.push( e );
+				} );
+			};
+			if( lines ) add( lines.children );
+			if( circles ) add( circles.children );
+			if( splines ) add( splines.children );
+			if( solids ) add( solids.children );
+			if( dimensions ) add( dimensions.children );
+			if( texts ) add( texts.children );
+			if( inserts ) add( inserts.children );
+			return refEntities;
+		} );
 
 		//add to group
 		if( lines ) group.add( lines );
