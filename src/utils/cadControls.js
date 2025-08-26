@@ -43,7 +43,7 @@ export class CADControls extends Raycaster {
 
 			//if control is pushed start selection box
 			if( event.ctrlKey ) {
-				var rect = event.target.getBoundingClientRect();
+				let rect = event.target.getBoundingClientRect();
 				const x = event.clientX - rect.left;
 				const y = event.clientY - rect.top;
 				
@@ -75,7 +75,7 @@ export class CADControls extends Raycaster {
 			if( objs ) ss = objs;
 		} else {
 
-			var rect = event.target.getBoundingClientRect();
+			let rect = event.target.getBoundingClientRect();
 			const x = event.clientX - rect.left;
 			const y = event.clientY - rect.top;
 			

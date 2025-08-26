@@ -10,7 +10,7 @@ import { SplineEntity } from './entities/splineEntity';
 import { SolidEntity } from './entities/solidEntity';
 import { HatchEntity } from './entities/hatchEntity';
 
-import * as Helper from 'dxf/src/Helper';
+import Helper from 'dxf/src/Helper';
 import { Properties } from './entities/baseEntity/properties';
 import { LayerHelper } from './entities/baseEntity/layerHelper.js';
 import { ColorHelper } from './entities/baseEntity/colorHelper.js';
@@ -69,24 +69,31 @@ export class DXFViewer {
 		let file = await rawdata.text();
 
 		//parse data
-		let data = new Helper.default( file ).parse();
+		let parser = new Helper( file ); 
+		let data = parser.parse();
 
 		//cache
-		this._toCache( path, data );
+		this._lastPath = path;
+		this._toCache( this._lastPath, data );
 
-		this._lastDXF = data;
-
+		//clear memory
+		parser._parsed = null;
+		parser = null;
+		data = null;
+		rawdata = null;
+		file = null;
+		
 		//parse layers
-		data.tables.layers = this.LayerHelper.parse( data.tables.layers );
+		this.lastDXF.tables.layers = this.LayerHelper.parse( this.lastDXF.tables.layers );
 
 		//export layers
-		this.layers = data.tables.layers;
+		this.layers = this.lastDXF.tables.layers;
 
 		//export global unit
-		this.unit = data.header ? data.header.insUnits : 0;
+		this.unit = this.lastDXF.header ? this.lastDXF.header.insUnits : 0;
 
 		//return draw
-		const draw = await this._drawDXF( data );
+		const draw = await this._drawDXF( this.lastDXF );
 		return draw;
 	}
 
@@ -217,5 +224,9 @@ export class DXFViewer {
 	}
 	set DefaultTextScale( value ) {
 		TextEntity.TextScale = value;
+	}
+
+	get lastDXF() {
+		return this._fromCache( this._lastPath );
 	}
 }

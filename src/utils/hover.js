@@ -23,7 +23,7 @@ export class Hover extends Raycaster {
 		
 		event.preventDefault();
 
-		var rect = event.target.getBoundingClientRect();
+		let rect = event.target.getBoundingClientRect();
 		const x = event.clientX - rect.left; //x position within the element.
 		const y = event.clientY - rect.top;  //y position within the element.
 		

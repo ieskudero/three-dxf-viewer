@@ -31,7 +31,7 @@ html.onLoad = async ( file ) => {
 		} );
 
 		//Optional. Add CAD Controls
-		const controls = new CADControls( html.three.renderer.domElement, html.three.camera, dxf, viewer._lastDXF );
+		const controls = new CADControls( html.three.renderer.domElement, html.three.camera, dxf, viewer.lastDXF );
 		controls.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered.userData.entity ) );
 		controls.subscribe( 'select', ( selects ) => console.log( 'Selected entities', selects ) );
 

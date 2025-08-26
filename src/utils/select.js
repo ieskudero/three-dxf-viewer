@@ -41,7 +41,7 @@ export class Select extends Raycaster {
 
 			//if control is pushed start selection box
 			if( event.ctrlKey ) {
-				var rect = event.target.getBoundingClientRect();
+				let rect = event.target.getBoundingClientRect();
 				const x = event.clientX - rect.left;
 				const y = event.clientY - rect.top;
 				
