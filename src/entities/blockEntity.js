@@ -53,12 +53,14 @@ export class BlockEntity extends BaseEntity {
 			const obj3d = this._generateBlock3d( _entity, extrusionZ );
 			if( obj3d ) group.add( obj3d );
 		}
+		
+		const getRefEntity3ds = refs => group.children.filter( e => refs.find( r => r === e.userData.entity.handle ) );
 		for( let i = 0; i < hatchEntities.length; i++ ) {
 			let _entity = hatchEntities[i];
 
 			if( this._hideEntity( _entity ) ) continue;
 
-			const obj3d = this._generateBlock3d( _entity, extrusionZ, group.children );
+			const obj3d = this._generateBlock3d( _entity, extrusionZ, getRefEntity3ds );
 			if( obj3d ) group.add( obj3d );
 		}
 
@@ -69,7 +71,7 @@ export class BlockEntity extends BaseEntity {
 		return group;
 	}
 
-	_generateBlock3d( entity, extrusionZ, entities3d ) {
+	_generateBlock3d( entity, extrusionZ, getRefEntity3ds ) {
 		switch ( entity.type ) {
 		case 'LINE': {
 			let _drawData = this._lineEntity.drawLine( entity, extrusionZ );
@@ -163,7 +165,7 @@ export class BlockEntity extends BaseEntity {
 			}
 		} break;
 		case 'HATCH': {
-			let _drawData = this._hatchEntity.drawHatch( entity, entities3d );
+			let _drawData = this._hatchEntity.drawHatch( entity, getRefEntity3ds );
 
 			if( _drawData.geometry && _drawData.geometry.attributes.position.count > 0 ) {
 				let obj3d = entity.fillType === 'SOLID' ? new Mesh( _drawData.geometry, _drawData.material ) : new LineSegments( _drawData.geometry, _drawData.material );

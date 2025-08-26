@@ -2,6 +2,8 @@ import { BaseEntity } from './baseEntity/baseEntity';
 import { LineEntity } from './lineEntity';
 import { SplineEntity } from './splineEntity';
 
+import { HatchCalculator, HatchStyle } from './hatchCalculator.js';
+
 import { Vector3, 
 	Vector2,
 	Group,
@@ -13,7 +15,8 @@ import { Vector3,
 	Box3,
 	BufferGeometry,
 	Float32BufferAttribute,
-	LineSegments } from 'three';
+	LineSegments, 
+	BufferAttribute } from 'three';
 
 /**
  * @class HatchEntity
@@ -36,7 +39,7 @@ export class HatchEntity extends BaseEntity {
 	 * @param data {DXFData} dxf parsed data.
      * @return {THREE.Group} ThreeJS object with all the generated geometry. DXF entity is added into userData
 	*/
-	draw( data ) {
+	draw( data, getRefEntity3ds ) {
         
 		let group = new Group();
 		group.name = 'HATCHES';
@@ -57,7 +60,7 @@ export class HatchEntity extends BaseEntity {
 				geometry = cached.geometry;
 				material = cached.material;
 			} else {
-				let _drawData = this.drawHatch( entity, entities );
+				let _drawData = this.drawHatch( entity, getRefEntity3ds );
 				geometry = _drawData.geometry;
 				material = _drawData.material;
                 
@@ -84,7 +87,7 @@ export class HatchEntity extends BaseEntity {
 	 * @param entity {entity} dxf parsed hatch entity.
      * @return {Object} object composed as {geometry: THREE.Geometry, material: THREE.Material}
 	*/
-	drawHatch( entity, referenceEntities3d ) {
+	drawHatch( entity, getRefEntity3ds ) {
         
 
 		let geometry = null;
@@ -93,17 +96,40 @@ export class HatchEntity extends BaseEntity {
 		//CONVERT ENTITIES TO POINTS
 		this._calculatePoints( entity );
 
+		//set boundary types
+		entity.boundary.loops.forEach( loop => this._setBoundaryTypes( loop ) );
+
+		//reorder: external first, outermost second
+		entity.boundary.loops.sort( ( a, b ) => {
+			if ( a.bType.external != b.bType.external ) {
+				return a.bType.external ? -1 : 1;
+			}
+			if ( a.bType.outermost != b.bType.outermost ) {
+				return a.bType.outermost ? -1 : 1;
+			}
+			return 0;
+		} );
+
+		//based on style, remove loops. 
+		// 2 = Hatch through entire area (Ignore style), 
+		// 1 = Hatch outermost area only (Outer style),
+		// 0 = Hatch “odd parity” area (Normal style) 
+		switch( entity.style ) {
+		case 2: entity.boundary.loops = [ entity.boundary.loops[0] ]; break;
+		case 1: entity.boundary.loops = entity.boundary.loops.filter( loop => loop.bType.external || loop.bType.outermost ); break;
+		}
+
 		//find outer loop, and set all the others as holes
 		this._calculateBoxes( entity.boundary );
 
 		if( entity.fillType === 'SOLID' ) {
             
-			geometry = this._generateBoundary( entity, referenceEntities3d );
+			geometry = this._generateBoundary( entity, getRefEntity3ds );
 			material = this._colorHelper.getMaterial( entity, 'shape', this.data.tables );
 		}
 		else if( entity.fillType === 'PATTERN' ) {
 
-			geometry = this._generatePatternGeometry( entity, referenceEntities3d );
+			geometry = this._generatePatternGeometry( entity, getRefEntity3ds );
 			material = this._colorHelper.getMaterial( entity, 'line', this.data.tables );
 		}
         
@@ -194,7 +220,7 @@ export class HatchEntity extends BaseEntity {
 		);
 	}
 
-	_generateBoundary( entity, referenceEntities3d ) {
+	_generateBoundary( entity, getRefEntity3ds ) {
 
 		const boundary = entity.boundary;
 
@@ -243,6 +269,30 @@ export class HatchEntity extends BaseEntity {
 			}
 		}
 		return new Box3( min, max );
+	}
+
+	_setBoundaryTypes( boundary ) {
+
+		//boundary path types
+		// 0 = Default; 1 = External; 2 = Polyline; 4 = Derived; 8 = Textbox; 16 = Outermost
+		boundary.bType = {
+			external: ( boundary.type & 1 ) != 0,
+			polyline: ( boundary.type & 2 ) != 0,
+			derived: ( boundary.type & 4 ) != 0,
+			textbox: ( boundary.type & 8 ) != 0,
+			outermost: ( boundary.type & 16 ) != 0
+		};
+
+		//edge types
+		// Polyline --> 1 = Line; 2 = Circular arc; 3 = Elliptic arc; 4 = Spline
+		boundary.eType = {
+			polyline: typeof boundary.hasBulge !== 'undefined',
+			line: typeof boundary.hasBulge !== 'undefined' ? boundary.hasBulge === 1 : boundary.edgeType === 1,
+			circulararc: typeof boundary.hasBulge !== 'undefined' ? boundary.hasBulge === 2 : boundary.edgeType === 2,
+			ellipticarc: typeof boundary.hasBulge !== 'undefined' ? boundary.hasBulge === 3 : boundary.edgeType === 3,
+			spline: typeof boundary.hasBulge !== 'undefined' ? boundary.hasBulge === 4 : boundary.edgeType === 4,
+		};
+
 	}
 
 	_getBiggestLoop( boundary ) {
@@ -361,117 +411,198 @@ export class HatchEntity extends BaseEntity {
 		return style === 1 ? ( loop.type & 16 ) === 16 && ( loop.type & 1 ) !== 1 : true;
 	}
 
-	_isLoopOuter( loop ) {
-		return ( loop.type & 1 ) === 1 && ( loop.type & 16 ) !== 16;
-	}
-
 	_extrusionTransform( entity, geometry ) {
 		if( entity.extrusionDir.z < 0 && geometry ) {
 			geometry.scale( -1, 1, 1 );
 		}
 	}
 
-	_generatePatternGeometry( entity, referenceEntities3d ) {
-		const pattern = entity.pattern;
-		const angleRad = pattern.angle * Math.PI / 180;
-		const dir = new Vector2( Math.cos( angleRad ), Math.sin( angleRad ) );
-		const perp = new Vector2( -dir.y, dir.x );
-		const offsetVec = new Vector2( pattern.offsetX, pattern.offsetY );
-		
-		let spacing = offsetVec.length();
-		if ( spacing === 0 ) spacing = entity.spacing || 1;
+	_generatePatternGeometry( entity, getRefEntity3ds ) {
+		const pattern = entity.pattern || {};
+		const angle = ( pattern.angle || 0 ) * Math.PI / 180;
+		const dir = new Vector2( Math.cos( angle ), Math.sin( angle ) );
+		const nrm = new Vector2( -dir.y, dir.x );
 
-		const perpNormalized = perp.clone().normalize();
+		const offsetVec = new Vector2( pattern.offsetX || 0, pattern.offsetY || 0 );
+		let spacing = Math.abs( offsetVec.x * nrm.x + offsetVec.y * nrm.y );
+		if ( spacing < 1e-9 ) spacing = entity.spacing || 1;
+
 		const base = new Vector2( pattern.x || 0, pattern.y || 0 );
-		const baseProj = base.dot( perpNormalized );
+		const baseProj = base.dot( nrm );
 
 		const boundary = entity.boundary;
-		const outerLoop = this._getBiggestLoop( boundary );
-		let polygon = this._mergeLoopPoints( outerLoop );
-
-		if ( polygon.length === 0 ) return null;
-
-		if ( this._signedArea( polygon ) < 0 ) {
-			polygon.reverse();
-		}
-
-		const holeLoops = boundary.loops.filter( loop => loop !== outerLoop && this._isLoopHole( loop, entity.style ) );
-		const holePolygons = [];
-		for ( let hl of holeLoops ) {
-			let hp = this._mergeLoopPoints( hl );
-			if ( hp.length > 0 ) holePolygons.push( hp );
-		}
-
-		// boundary polygons, to take into account in order to clip the pattern		
-		// fill the boundaries with arrays of Vector3 for each geometry an take them into account for positions clipping. 
-		// If there is an index in the geometry, take that into account for creating the array from the geometry
-		const boundaries = this._collectReferencedPolylines( referenceEntities3d );
-		//TODO use them to cut the pattern lines
+		if ( !boundary || !Array.isArray( boundary.loops ) || boundary.loops.length === 0 ) return null;
 
 
-		let minProj = Infinity;
-		let maxProj = -Infinity;
-		for ( let p of polygon ) {
-			const proj = new Vector2( p.x, p.y ).dot( perpNormalized );
-			minProj = Math.min( minProj, proj );
-			maxProj = Math.max( maxProj, proj );
-		}
+		// Convert Vector2/3 -> plain {x,y}
+		const v2plain = ( arr ) => arr.map( p => ( { x: p.x, y: p.y } ) );
 
-		for ( let hole of holePolygons ) {
-			for ( let p of hole ) {
-				const proj = new Vector2( p.x, p.y ).dot( perpNormalized );
-				minProj = Math.min( minProj, proj );
-				maxProj = Math.max( maxProj, proj );
+		// ---------- build all loops (use references when present) ----------
+		const allLoops = [];
+
+		for ( const loop of boundary.loops ) {
+			let ringsFromRefs = [];
+			if ( Array.isArray( loop.references ) && loop.references.length ) {
+				const refEntities = getRefEntity3ds( loop.references );
+				const refPolys = this._getPointsFromEntities( refEntities ) || [];
+
+				// Connect them into rings
+				const plainPieces = refPolys
+					.map( v2plain )
+					.filter( p => p.length >= 2 );
+
+				ringsFromRefs = this._stitchPolylines( plainPieces );
+			}
+
+			if ( ringsFromRefs.length ) {
+				for ( const ring of ringsFromRefs ) {
+					allLoops.push( ring );
+				}
+			} else {
+				// Fallback: single merged ring from loop.entities
+				const ringPts = this._mergeLoopPoints( loop );
+				if ( ringPts && ringPts.length >= 3 ) {
+					const clean = this._cleanPolyline( v2plain( ringPts ) );
+					if ( clean.length >= 3 ) allLoops.push( clean );
+				}
 			}
 		}
 
-		const startK = Math.ceil( ( minProj - baseProj ) / spacing );
-		const endK = Math.floor( ( maxProj - baseProj ) / spacing );
+		if ( allLoops.length === 0 ) return null;
+
+		// ---------- extents along (dir, nrm) ----------
+		let minS = Infinity, maxS = -Infinity, minN = Infinity, maxN = -Infinity;
+		for ( const loop of allLoops ) {
+			for ( const v of loop ) {
+				const s = v.x * dir.x + v.y * dir.y;
+				const t = v.x * nrm.x + v.y * nrm.y;
+				if ( s < minS ) minS = s; if ( s > maxS ) maxS = s;
+				if ( t < minN ) minN = t; if ( t > maxN ) maxN = t;
+			}
+		}
+
+		const startK = Math.ceil( ( minN - baseProj ) / spacing );
+		const endK   = Math.floor( ( maxN - baseProj ) / spacing );
+
+		// ---------- loop-aware clipping ---------- //
+		const styleMap = { 0: HatchStyle.ODD_PARITY, 1: HatchStyle.OUTERMOST, 2: HatchStyle.THROUGH_ENTIRE_AREA };
+		const calc = new HatchCalculator( allLoops, styleMap[entity.style] ?? HatchStyle.ODD_PARITY );
 
 		const positions = [];
+		const margin = 1;
 
 		for ( let k = startK; k <= endK; k++ ) {
-			const offset = baseProj + k * spacing;
-			let intersections = [];
+			const t = baseProj + k * spacing;
+			const s0 = minS - margin, s1 = maxS + margin;
 
-			// Intersections with outer
-			for ( let i = 0; i < polygon.length; i++ ) {
-				this._intersect( polygon, i, perpNormalized, offset, intersections );
-			}
+			const p0 = new Vector2( dir.x * s0 + nrm.x * t, dir.y * s0 + nrm.y * t );
+			const p1 = new Vector2( dir.x * s1 + nrm.x * t, dir.y * s1 + nrm.y * t );
 
-			// Intersections with holes
-			for ( let hole of holePolygons ) {
-				for ( let i = 0; i < hole.length; i++ ) {
-					this._intersect( hole, i, perpNormalized, offset, intersections );
-				}
-			}
-
-			// Sort by projection on dir
-			intersections.sort( ( a, b ) => a.dot( dir ) - b.dot( dir ) );
-
-			// Deduplicate intersections
-			let uniqueInter = [];
-			for ( let int of intersections ) {
-				if ( uniqueInter.length === 0 || Math.abs( int.dot( dir ) - uniqueInter[ uniqueInter.length - 1 ].dot( dir ) ) > 1e-6 ) {
-					uniqueInter.push( int );
-				}
-			}
-			intersections = uniqueInter;
-
-			// Draw pairs (even-odd rule)
-			for ( let j = 0; j < intersections.length; j += 2 ) {
-				if ( j + 1 < intersections.length ) {
-					const start = intersections[j];
-					const end = intersections[j + 1];
-					positions.push( start.x, start.y, 0 );
-					positions.push( end.x, end.y, 0 );
-				}
+			const spans = calc.ClipLine( [ { x: p0.x, y: p0.y }, { x: p1.x, y: p1.y } ] );
+			for ( const [ a, b ] of spans ) {
+				const A = p0.clone().lerp( p1, a );
+				const B = p0.clone().lerp( p1, b );
+				positions.push( A.x, A.y, 0, B.x, B.y, 0 );
 			}
 		}
+
+		if ( !positions.length ) return null;
 
 		const geometry = new BufferGeometry();
 		geometry.setAttribute( 'position', new Float32BufferAttribute( positions, 3 ) );
+		const count = geometry.attributes.position.count;
+
+		//set index in pairs
+		const index = [];
+		for ( let i = 0; i < count; i += 2 ) {
+			index.push( i, i + 1 );
+		}
+		geometry.setIndex( new BufferAttribute( new Uint16Array( index ), 1 ) );
 		return geometry;
+	}
+
+	_stitchPolylines( polys ) {
+
+		// ---------- helpers ----------
+		const EPS = 1e-6;
+		const vEq = ( a, b ) => Math.abs( a.x - b.x ) < EPS && Math.abs( a.y - b.y ) < EPS;
+
+		const unused = polys.map( this._cleanPolyline ).filter( p => p.length > 0 );
+		const rings = [];
+
+		while ( unused.length ) {
+			// start a new path with the first available polyline
+			let path = unused.shift().slice();
+			let extended = true;
+
+			// keep appending until we either close or can't extend
+			while ( extended ) {
+				extended = false;
+
+				for ( let i = 0; i < unused.length; i++ ) {
+					const seg = unused[i];
+					const head = path[0];
+					const tail = path[path.length - 1];
+					const a0 = seg[0];
+					const a1 = seg[seg.length - 1];
+
+					if ( vEq( tail, a0 ) ) {
+						// ...tail -> seg forward
+						path = path.concat( seg.slice( 1 ) );
+						unused.splice( i, 1 );
+						extended = true;
+						break;
+					}
+					if ( vEq( tail, a1 ) ) {
+						// ...tail -> reversed(seg)
+						path = path.concat( seg.slice( 0, -1 ).reverse() );
+						unused.splice( i, 1 );
+						extended = true;
+						break;
+					}
+					if ( vEq( head, a1 ) ) {
+						// reversed(seg) -> head...
+						path = seg.slice( 0, -1 ).concat( path );
+						unused.splice( i, 1 );
+						extended = true;
+						break;
+					}
+					if ( vEq( head, a0 ) ) {
+						// seg -> head...
+						path = seg.slice( 1 ).reverse().concat( path );
+						unused.splice( i, 1 );
+						extended = true;
+						break;
+					}
+				}
+			}
+
+			// close if endpoints coincide; otherwise, drop if not a proper ring
+			if ( path.length >= 3 && vEq( path[0], path[path.length - 1] ) ) path.pop();
+			if ( path.length >= 3 ) rings.push( path );
+			// if it didn't close, we treat it as not a hatch boundary and skip
+		}
+
+		return rings;
+	}
+
+	_cleanPolyline( poly ) {
+		if ( !poly || poly.length < 2 ) return [];
+		
+		// ---------- helpers ----------
+		const EPS = 1e-6;
+		const vEq = ( a, b ) => Math.abs( a.x - b.x ) < EPS && Math.abs( a.y - b.y ) < EPS;
+		
+		const out = [ poly[0] ];
+		for ( let i = 1; i < poly.length; i++ ) {
+			const p = poly[i], q = out[out.length - 1];
+			if ( !vEq( p, q ) ) out.push( p );
+		}
+		if ( out.length >= 3 && vEq( out[0], out[out.length - 1] ) ) {
+			// closed, remove duplicate last
+			out.pop();
+		}
+		return out;
 	}
 
 	_intersect( arr, i, perpNormalized, offset, intersections = [] ) {
@@ -495,125 +626,6 @@ export class HatchEntity extends BaseEntity {
 			area -= points[j].x * points[i].y;
 		}
 		return area / 2;
-	}
-
-	/**
-	 * Clip hatch 'positions' by crossings against:
-	 *  - the primary outer polygon
-	 *  - the hole polygons
-	 *  - and extra polylines extracted from referenced boundary geometry
-	 *
-	 * @param {Array<{x:number,y:number}>} polygon
-	 * @param {Array<Array<{x:number,y:number}>>} holePolygons
-	 * @param {Float32Array|number[]} positions  // [x0,y0,0, x1,y1,0, ...]
-	 * @param {Vector3[][]} referencedPolylines  // output of _collectReferencedPolylines
-	 * @param {0|1} style                        // 0=even-odd, 1=non-zero
-	 * @returns {Float32Array}
-	 */
-	_clipPositionsWithReferencedBoundaries( polygon, holePolygons, referencedPolylines, positions, style = 0 ) {
-		const EPS = 1e-9;
-
-		const cross = ( a,b ) => a.x*b.y - a.y*b.x;
-
-		function segInterT( p, r, q, s ) {
-			const rxs = cross( r, s );
-			const qmp = { x: q.x - p.x, y: q.y - p.y };
-			if ( Math.abs( rxs ) < EPS ) return null; // parallel or colinear => ignore for cutting
-			const t = cross( qmp, s ) / rxs;
-			const u = cross( qmp, r ) / rxs;
-			if ( t >= -EPS && t <= 1 + EPS && u >= -EPS && u <= 1 + EPS ) return Math.min( Math.max( t, 0 ), 1 );
-			return null;
-		}
-
-		function pointInRing_evenOdd( pt, ring ) {
-			let inside = false;
-			for ( let i = 0, n = ring.length; i < n; i++ ) {
-				const a = ring[i], b = ring[( i+1 )%n];
-				const yi = a.y, yj = b.y;
-				const xi = a.x, xj = b.x;
-				const inter = ( ( yi > pt.y ) !== ( yj > pt.y ) ) &&
-                    ( pt.x < ( xj - xi ) * ( pt.y - yi ) / ( yj - yi ) + xi );
-				if ( inter ) inside = !inside;
-			}
-			return inside;
-		}
-		function pointInRing_nonZero( pt, ring ) {
-			let w = 0;
-			for ( let i = 0, n = ring.length; i < n; i++ ) {
-				const a = ring[i], b = ring[( i + 1 ) % n];
-				const ab = { x: b.x - a.x, y: b.y - a.y };
-				if ( a.y <= pt.y && b.y >  pt.y && cross( ab, { x: pt.x - a.x, y: pt.y - a.y } ) > 0 ) w++;
-				else if ( b.y <= pt.y && a.y > pt.y && cross( ab, { x: pt.x - a.x, y: pt.y - a.y } ) < 0 ) w--;
-			}
-			return w !== 0;
-		}
-		const pointInRing = ( style === 1 ) ? pointInRing_nonZero : pointInRing_evenOdd;
-
-		function isInside( pt ) {
-			if ( !pointInRing( pt, polygon ) ) return false;
-			for ( const h of holePolygons ) if ( pointInRing( pt, h ) ) return false;
-			return true;
-		}
-
-		function edgesFromRing( ring ) {
-			const e = [];
-			for ( let i = 0; i < ring.length; i++ ) e.push( [ ring[i], ring[( i+1 )%ring.length] ] );
-			return e;
-		}
-		function edgesFromPolyline( poly ) {
-			const e = [];
-			for ( let i = 0; i + 1 < poly.length; i++ ) {
-				const a = poly[i], b = poly[i+1];
-				e.push( [ { x:a.x, y:a.y }, { x:b.x, y:b.y } ] );
-			}
-			return e;
-		}
-
-		// Build one big list of cutting edges
-		const outerEdges = edgesFromRing( polygon );
-		const holeEdges  = holePolygons.flatMap( edgesFromRing );
-		const refEdges   = ( Array.isArray( referencedPolylines ) ? referencedPolylines : [] )
-			.flatMap( edgesFromPolyline );
-
-		const allEdges = outerEdges.concat( holeEdges, refEdges );
-
-		// Cut each incoming hatch segment
-		const out = [];
-		for ( let i = 0; i + 5 < positions.length; i += 6 ) {
-			const p0 = { x: positions[i],   y: positions[i+1] };
-			const p1 = { x: positions[i+3], y: positions[i+4] };
-			const r  = { x: p1.x - p0.x, y: p1.y - p0.y };
-
-			// collect intersection parameters along segment
-			const ts = [ 0, 1 ];
-
-			for ( const [ a, b ] of allEdges ) {
-				const s = { x: b.x - a.x, y: b.y - a.y };
-				const t = segInterT( p0, r, a, s );
-				if ( t === null ) continue;
-				// dedupe near endpoints
-				let dup = false;
-				for ( let j = 0; j < ts.length; j++ ) if ( Math.abs( ts[j] - t ) < 1e-8 ) { dup = true; break; }
-				if ( !dup ) ts.push( t );
-			}
-
-			ts.sort( ( A, B ) => A - B );
-
-			// create subsegments and keep those whose midpoints are inside
-			for ( let j = 0; j + 1 < ts.length; j++ ) {
-				const t0 = ts[j], t1 = ts[j+1];
-				if ( t1 - t0 <= 1e-10 ) continue;
-				const mid = ( t0 + t1 ) * 0.5;
-				const m = { x: p0.x + r.x * mid, y: p0.y + r.y * mid };
-				if ( !isInside( m ) ) continue;
-
-				const A = { x: p0.x + r.x * t0, y: p0.y + r.y * t0 };
-				const B = { x: p0.x + r.x * t1, y: p0.y + r.y * t1 };
-				out.push( A.x, A.y, 0, B.x, B.y, 0 );
-			}
-		}
-
-		return new Float32Array( out );
 	}
 
 
@@ -677,7 +689,7 @@ export class HatchEntity extends BaseEntity {
 	 * Each entry may look like { geometry: BufferGeometry, ... }.
 	 * You can pass in any extra fields – they’re ignored.
 	 */
-	_collectReferencedPolylines( refEntities ) {
+	_getPointsFromEntities( refEntities ) {
 		const out = [];
 		if ( !Array.isArray( refEntities ) ) return out;
 		for ( const ref of refEntities ) {
