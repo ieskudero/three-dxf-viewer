@@ -220,7 +220,7 @@ export class HatchEntity extends BaseEntity {
 		);
 	}
 
-	_generateBoundary( entity, getRefEntity3ds ) {
+	_generateBoundary( entity, /*getRefEntity3ds*/ ) {
 
 		const boundary = entity.boundary;
 
