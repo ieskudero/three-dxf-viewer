@@ -76,8 +76,8 @@ export class LineEntity extends BaseEntity {
 		let material = this._colorHelper.getMaterial( entity, lineType, this.data.tables );
 
 		let geometry = new BufferGeometry().setFromPoints( [
-			new Vector3( extrusionZ * entity.start.x, entity.start.y, entity.start.z ),
-			new Vector3( extrusionZ * entity.end.x, entity.end.y, entity.end.z ),
+			{ x: extrusionZ * entity.start.x, y: entity.start.y, z: entity.start.z },
+			{ x: extrusionZ * entity.end.x, y: entity.end.y, z: entity.end.z },
 		] );
 		geometry.setIndex( new BufferAttribute( new Uint16Array( [ 0, 1 ] ), 1 ) );
     
@@ -111,25 +111,27 @@ export class LineEntity extends BaseEntity {
 	_getPolyLinePoints( vertices, closed, extrusionZ = 1 ) {
 
 		let points = [];
+		const from = new Vector3();
+		const to = new Vector3();
 		for ( let i = 0, il = vertices.length; i < il - 1; ++i ) {
 
 			let fromv = vertices[i];
 			let tov = vertices[i + 1];
 			let bulge = vertices[i].bulge;
-			let from = new Vector3( fromv.x, fromv.y, fromv.z );
-			let to = new Vector3( tov.x, tov.y, tov.z );
+			from.set( fromv.x, fromv.y, fromv.z );
+			to.set( tov.x, tov.y, tov.z );
 
-			points.push( from );
+			points.push( { x: fromv.x, y: fromv.y, z: fromv.z } );
 			if ( bulge ) {
-				let arcPoints = createArcoFromPolyline.default( [ from.x, from.y, from.z ], [ to.x, to.y, to.z ], bulge );
+				let arcPoints = createArcoFromPolyline.default( [ fromv.x, fromv.y, fromv.z ], [ tov.x, tov.y, tov.z ], bulge );
 				for ( let j = 0, jl = arcPoints.length; j < jl; ++j ) {
 					const arc = arcPoints[j];
-					points.push( new Vector3( extrusionZ * arc[0], arc[1], arc.length > 2 ? arc[2] : 0 ) );
+					points.push( { x: extrusionZ * arc[0], y: arc[1], z: arc.length > 2 ? arc[2] : 0 } );
 				}
 			}
     
 			if ( i === il - 2 ) {
-				points.push( to );
+				points.push( { x: tov.x, y: tov.y, z: tov.z } );
 			}
 		}
 

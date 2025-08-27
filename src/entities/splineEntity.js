@@ -1,7 +1,6 @@
 import { BaseEntity } from './baseEntity/baseEntity';
 import { Group,
 	BufferGeometry,
-	Vector3,
 	Line,
 	BufferAttribute } from 'three';
 import * as bSpline from 'dxf/lib/util/bSpline';
@@ -108,7 +107,7 @@ export class SplineEntity extends BaseEntity {
 				t = Math.min( t, 1 );
 				const p = bSpline.default( t, degree, controlPointsForLib, knots, weights );
 				if( isNaN( p[0] ) || isNaN( p[1] ) ) continue;
-				polyline.push( new Vector3( p[0], p[1], 0 ) );
+				polyline.push( { x: p[0], y: p[1], z: 0 } );
 			}
 		}
 		return polyline;

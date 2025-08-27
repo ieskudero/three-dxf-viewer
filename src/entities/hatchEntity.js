@@ -30,7 +30,14 @@ export class HatchEntity extends BaseEntity {
 		this._lineEntity = new LineEntity( data );
 		this._splineEntity = new SplineEntity( data );
 		this._patternHelper = {
-			dir: new Vector3( 0,1,0 ),
+			dir: new Vector2(),
+			nrm: new Vector2(),
+			offsetVec: new Vector2(),
+			base: new Vector2()
+		};
+		this._boxHelper = {
+			min: new Vector3(),
+			max: new Vector3()
 		};
 	}
 
@@ -159,8 +166,8 @@ export class HatchEntity extends BaseEntity {
 
 	_getLinePoints( entity ){
 		entity.points = [];
-		entity.points.push( new Vector3( entity.start.x, entity.start.y, 0 ) ); 
-		entity.points.push( new Vector3( entity.end.x, entity.end.y, 0 ) );
+		entity.points.push( { x: entity.start.x, y: entity.start.y, z: 0 } ); 
+		entity.points.push( { x: entity.end.x, y: entity.end.y, z: 0 } );
 	}
 
 	_getPolyLinePoints( ) {
@@ -189,7 +196,7 @@ export class HatchEntity extends BaseEntity {
 			false );    // Always counterclockwise
 
 		let ps = curve.getPoints( 32 );
-		for ( let i = 0; i < ps.length; i++ ) entity.points.push( new Vector3( ps[i].x, ps[i].y, 0 ) );
+		for ( let i = 0; i < ps.length; i++ ) entity.points.push( { x: ps[i].x, y: ps[i].y, z: 0 } );
 	}
 
 	_getEllipsePoints( entity ){
@@ -208,7 +215,7 @@ export class HatchEntity extends BaseEntity {
 
 		let ps = curve.getPoints( 32 );
         
-		for ( let i = 0; i < ps.length; i++ ) entity.points.push( new Vector3( ps[i].x, ps[i].y, 0 ) );
+		for ( let i = 0; i < ps.length; i++ ) entity.points.push( { x: ps[i].x, y: ps[i].y, z: 0 } );
 	}
     
 	_getSplinePoints( entity ){
@@ -258,17 +265,17 @@ export class HatchEntity extends BaseEntity {
 	}
 
 	_getLoopBox( loop ) {
-		let min = new Vector3( Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE );
-		let max = new Vector3( Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE );
+		this._boxHelper.min.set( Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE );
+		this._boxHelper.max.set( Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE );
 		for( let i = 0; i < loop.entities.length; i++ ) {
 			const entity = loop.entities[i];
 			for( let j = 0; j < entity.points.length; j++ ) {
 				const point = entity.points[j];
-				min.min( point );
-				max.max( point );
+				this._boxHelper.min.min( point );
+				this._boxHelper.max.max( point );
 			}
 		}
-		return new Box3( min, max );
+		return new Box3( this._boxHelper.min, this._boxHelper.max );
 	}
 
 	_setBoundaryTypes( boundary ) {
@@ -408,7 +415,10 @@ export class HatchEntity extends BaseEntity {
 	}
 
 	_samePoints( p1, p2 ) {
-		return p1.distanceTo( p2 ) < 0.0001;
+		const dx = p1.x - p2.x, dy = p1.y - p2.y, dz = p1.z - p2.z;
+		const square = dx * dx + dy * dy + dz * dz;
+
+		return Math.sqrt( square ) < 0.0001;
 	}
 
 	_isLoopHole( loop, style ) {
@@ -424,15 +434,17 @@ export class HatchEntity extends BaseEntity {
 	_generatePatternGeometry( entity, getRefEntity3ds ) {
 		const pattern = entity.pattern || {};
 		const angle = ( pattern.angle || 0 ) * Math.PI / 180;
-		const dir = new Vector2( Math.cos( angle ), Math.sin( angle ) );
-		const nrm = new Vector2( -dir.y, dir.x );
+		this._patternHelper.dir.set( Math.cos( angle ), Math.sin( angle ) ); 
+		this._patternHelper.nrm.set( -this._patternHelper.dir.y, this._patternHelper.dir.x );
+		const dir = this._patternHelper.dir;
+		const nrm = this._patternHelper.nrm;
 
-		const offsetVec = new Vector2( pattern.offsetX || 0, pattern.offsetY || 0 );
-		let spacing = Math.abs( offsetVec.x * nrm.x + offsetVec.y * nrm.y );
+		this._patternHelper.offsetVec.set( pattern.offsetX || 0, pattern.offsetY || 0 );
+		let spacing = Math.abs( this._patternHelper.offsetVec.x * nrm.x + this._patternHelper.offsetVec.y * nrm.y );
 		if ( spacing < 1e-9 ) spacing = entity.spacing || 1;
 
-		const base = new Vector2( pattern.x || 0, pattern.y || 0 );
-		const baseProj = base.dot( nrm );
+		this._patternHelper.base.set( pattern.x || 0, pattern.y || 0 );
+		const baseProj = this._patternHelper.base.dot( nrm );
 
 		const boundary = entity.boundary;
 		if ( !boundary || !Array.isArray( boundary.loops ) || boundary.loops.length === 0 ) return null;
@@ -452,7 +464,6 @@ export class HatchEntity extends BaseEntity {
 
 				// Connect them into rings
 				const plainPieces = refPolys
-					.map( v2plain )
 					.filter( p => p.length >= 2 );
 
 				ringsFromRefs = this._stitchPolylines( plainPieces );
@@ -497,13 +508,14 @@ export class HatchEntity extends BaseEntity {
 
 		const lineCount = endK - startK;
 		let incr = lineCount > 1000 ? Math.ceil( lineCount / 1000 ): 1;  //limit to 1000 incrementing more than one
-
+		const p0 = new Vector2();
+		const p1 = new Vector2();
 		for ( let k = startK; k <= endK; k+=incr ) {
 			const t = baseProj + k * spacing;
 			const s0 = minS - margin, s1 = maxS + margin;
 
-			const p0 = new Vector2( dir.x * s0 + nrm.x * t, dir.y * s0 + nrm.y * t );
-			const p1 = new Vector2( dir.x * s1 + nrm.x * t, dir.y * s1 + nrm.y * t );
+			p0.set( dir.x * s0 + nrm.x * t, dir.y * s0 + nrm.y * t );
+			p1.set( dir.x * s1 + nrm.x * t, dir.y * s1 + nrm.y * t );
 
 			const spans = calc.ClipLine( [ { x: p0.x, y: p0.y }, { x: p1.x, y: p1.y } ] );
 			for ( const [ a, b ] of spans ) {
@@ -612,40 +624,16 @@ export class HatchEntity extends BaseEntity {
 		return out;
 	}
 
-	_intersect( arr, i, perpNormalized, offset, intersections = [] ) {
-		const p1 = new Vector2( arr[i].x, arr[i].y );
-		const p2 = new Vector2( arr[( i + 1 ) % arr.length].x, arr[( i + 1 ) % arr.length].y );
-		const den = p2.clone().sub( p1 ).dot( perpNormalized );
-		if ( Math.abs( den ) < 1e-6 ) return;
-		const num = offset - p1.dot( perpNormalized );
-		const t = num / den;
-		if ( t >= 0 && t <= 1 ) {
-			const intPoint = p1.clone().add( p2.clone().sub( p1 ).multiplyScalar( t ) );
-			intersections.push( intPoint );
-		}
-	}
-
-	_signedArea( points ) {
-		let area = 0;
-		for ( let i = 0; i < points.length; i++ ) {
-			const j = ( i + 1 ) % points.length;
-			area += points[i].x * points[j].y;
-			area -= points[j].x * points[i].y;
-		}
-		return area / 2;
-	}
-
-
 	/**
 	 * Convert a THREE.BufferGeometry (indexed or not) into one or more polylines.
-	 * Each polyline is returned as an array of THREE.Vector3.
+	 * Each polyline is returned as an array of THREE.Vector2.
 	 * - If geometry has an index, we follow the index order and split when the
 	 *   path breaks (non-consecutive jump).
 	 * - If no index, we read the position array in order.
 	 * - If the geometry represents triangles, this still works because we split
 	 *   on breaks; for clean results you should pass line/outline geometries.
 	 */
-	_geometryToVector3Arrays( geometry ) {
+	_geometryToVector2Arrays( geometry ) {
 		if ( !geometry ) return [];
 
 		const posAttr = geometry.getAttribute( 'position' );
@@ -655,9 +643,9 @@ export class HatchEntity extends BaseEntity {
 		const itemSize = posAttr.itemSize || 3;
 
 		// Helper to push a point from positions array
-		const pointAt = ( i, out = new Vector3() ) => {
+		const pointAt = ( i ) => {
 			const j = i * itemSize;
-			return out.set( positions[j], positions[j + 1], positions[j + 2] || 0 );
+			return { x: positions[j], y: positions[j + 1] };
 		};
 
 		const polylines = [];
@@ -676,7 +664,7 @@ export class HatchEntity extends BaseEntity {
 					if ( current.length > 1 ) polylines.push( current );
 					current = [];
 				}
-				current.push( pointAt( i, new Vector3() ) );
+				current.push( pointAt( i ) );
 				last = i;
 			}
 			if ( current.length > 1 ) polylines.push( current );
@@ -684,7 +672,7 @@ export class HatchEntity extends BaseEntity {
 			// Non-indexed: assume consecutive positions describe a polyline
 			const n = Math.floor( positions.length / itemSize );
 			const line = [];
-			for ( let i = 0; i < n; i++ ) line.push( pointAt( i, new Vector3() ) );
+			for ( let i = 0; i < n; i++ ) line.push( pointAt( i ) );
 			if ( line.length > 1 ) polylines.push( line );
 		}
 
@@ -692,7 +680,7 @@ export class HatchEntity extends BaseEntity {
 	}
 
 	/**
-	 * Convert an array of objects that contain `.geometry` into Vector3[][].
+	 * Convert an array of objects that contain `.geometry` into Vector2[][].
 	 * Each entry may look like { geometry: BufferGeometry, ... }.
 	 * You can pass in any extra fields – they’re ignored.
 	 */
@@ -701,7 +689,7 @@ export class HatchEntity extends BaseEntity {
 		if ( !Array.isArray( refEntities ) ) return out;
 		for ( const ref of refEntities ) {
 			if ( !ref || !ref.geometry ) continue;
-			const parts = this._geometryToVector3Arrays( ref.geometry );
+			const parts = this._geometryToVector2Arrays( ref.geometry );
 			for ( const poly of parts ) if ( poly.length > 1 ) out.push( poly );
 		}
 		return out;
