@@ -265,17 +265,17 @@ export class HatchEntity extends BaseEntity {
 	}
 
 	_getLoopBox( loop ) {
-		this._boxHelper.min.set( Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE );
-		this._boxHelper.max.set( Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE );
+		let min = new Vector3( Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE );
+		let max = new Vector3( Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE );
 		for( let i = 0; i < loop.entities.length; i++ ) {
 			const entity = loop.entities[i];
 			for( let j = 0; j < entity.points.length; j++ ) {
 				const point = entity.points[j];
-				this._boxHelper.min.min( point );
-				this._boxHelper.max.max( point );
+				min.min( point );
+				max.max( point );
 			}
 		}
-		return new Box3( this._boxHelper.min, this._boxHelper.max );
+		return new Box3( min, max );
 	}
 
 	_setBoundaryTypes( boundary ) {
