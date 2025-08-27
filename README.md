@@ -161,7 +161,7 @@ let dxf = await new DXFViewer().getFromPath( dxfFilePath, fontPath );
 
 let snaps = new SnapsHelper( dxf, renderer, scene, camera, controls );
 snaps.subscribe( 'nearSnap', ( snap ) => {			
-	console.log( `distance from Mouse: ${snap.distance}, 3d entity: ${snap.snap.entity.uuid}, DXF entity: ${snap.snap.entity.userData.handle}` );
+	console.log( `distance from Mouse: ${snap.distance}, 3d entity: ${snap.snap.entity.uuid}, DXF entity: ${snap.snap.entity.userData.entity.handle}` );
 } );
 
 ```

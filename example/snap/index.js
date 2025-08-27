@@ -17,7 +17,7 @@ html.onLoad = async ( file ) => {
 		if( snaps ) snaps.clear();
 		snaps = new SnapsHelper( dxf, html.three.renderer, html.three.scene, html.three.camera, html.three.controls );
 		snaps.subscribe( 'nearSnap', ( snap ) => {			
-			console.log( `distance from Mouse: ${snap.distance}, 3d entity: ${snap.snap.entity.uuid}, DXF entity: ${snap.snap.entity.userData.handle}` );
+			console.log( `distance from Mouse: ${snap.distance}, 3d entity: ${snap.snap.entity.uuid}, DXF entity: ${snap.snap.entity.userData.entity.handle}` );
 		} );
 		
 		//add dxf
