@@ -14,6 +14,7 @@ const MM_ANISOTROPIC = 8;
 export class Ole2FrameWMFRenderer {
 	constructor( entity ) {
 		this.entity = entity;
+		WMFJS.loggingEnabled( false );
 	}
 
 	async render( wmfBytes,options = { dpi: 96, rasterScale: 2 } ) {
