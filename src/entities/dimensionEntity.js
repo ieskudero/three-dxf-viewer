@@ -28,7 +28,7 @@ export class DimensionEntity extends BaseEntity {
 	 * @param data {DXFData} dxf parsed data.
      * @return {THREE.Group} ThreeJS object with all the generated geometry. DXF entity is added into userData
 	*/
-	draw( data ) {
+	async draw( data ) {
 
 		//get all dimensions
 		let entities = data.entities.filter( entity => entity.type === 'DIMENSION' );
@@ -51,7 +51,7 @@ export class DimensionEntity extends BaseEntity {
 			let dimGroup = new Group();
 			dimGroup.name = 'DIMENSION';
 			dimGroup.userData = { entity: entity };
-			let block = this._blockEntity.drawBlock( entity.blockObj );
+			let block = await this._blockEntity.drawBlock( entity.blockObj );
 			dimGroup.add( block );
 
 			result.add( dimGroup );

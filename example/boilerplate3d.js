@@ -1,10 +1,11 @@
-import { Box3, Color, LinearToneMapping, MOUSE, OrthographicCamera, Scene, SRGBColorSpace, WebGLRenderer } from 'three';
+import { AmbientLight, Box3, Color, LinearToneMapping, MOUSE, OrthographicCamera, Scene, SRGBColorSpace, WebGLRenderer } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 export class Boilerplate3D {
 	constructor(){
 		this.container;
 		this.camera = null;
+		this.lights = null;
 		this.scene = null;
 		this.renderer = null;
 		this.controls = null;
@@ -36,6 +37,10 @@ export class Boilerplate3D {
 		// scene
 		this.scene = new Scene();
 		this.scene.background = new Color( 0x212830 );
+
+		//light
+		this.lights = new AmbientLight( 0xffffff, 1 ); // soft white light
+		this.scene.add( this.lights );
 		
 		// camera
 		const size = 10000;
@@ -89,7 +94,12 @@ export class Boilerplate3D {
 	}
 
 	clear() {
-		while( this.scene.children.length > 0 ) { this.scene.remove( this.scene.children[0] ); }
+		for( let i = this.scene.children.length - 1; i >= 0; i-- ) {
+			let obj = this.scene.children[i];
+			if( obj.type === 'AmbientLight' ) continue;
+			
+			this.scene.remove( obj );
+		}
 	}
 	
 	animate() {

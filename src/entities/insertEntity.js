@@ -20,7 +20,7 @@ export class InsertEntity extends BaseEntity {
 	 * @param data {DXFData} dxf parsed data.
      * @return {THREE.Group} ThreeJS object with all the generated geometry. DXF entity is added into userData
 	*/
-	draw( data ) {
+	async draw( data ) {
 		
 		this.data = data;
 
@@ -43,7 +43,7 @@ export class InsertEntity extends BaseEntity {
 			let entity = entities[i];
 
 			if( this._hideEntity( entity ) ) continue;
-			let obj = this.drawInsert( entity );
+			let obj = await this.drawInsert( entity );
 			if( obj ) result.add( obj );
 		}
 
@@ -55,7 +55,7 @@ export class InsertEntity extends BaseEntity {
 	 * @param entity {entity} dxf parsed insert entity.
      * @return {Object} object composed as {geometry: THREE.Geometry, material: THREE.Material}
 	*/
-	drawInsert( entity ) {
+	async drawInsert( entity ) {
 		
 		let cached = this._getCached( entity );
 		if( cached ) { return cached; }
@@ -73,7 +73,7 @@ export class InsertEntity extends BaseEntity {
 			group.userData = { entity: entity };
 
 			const extrusionZ = entity.extrusionZ < 0 ? -1 : 1;
-			group.add( this._blockEntity.drawBlock( block, extrusionZ ) );
+			group.add( await this._blockEntity.drawBlock( block, extrusionZ ) );
 
 			group.scale.set( extrusionZ * sx, sy, sz );
 
