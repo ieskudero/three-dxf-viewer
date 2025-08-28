@@ -187,7 +187,7 @@ export class BlockEntity extends BaseEntity {
 			//we don't draw anything, all dimension related entities are drawn in each case
 		} break;
 		default: {
-			console.log( 'unknown entity type: ' + entity.type );
+			this.trigger( 'log', 'unknown entity type: ' + entity.type );
 		} break;
 		}
 		return null;

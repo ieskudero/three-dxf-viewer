@@ -9,8 +9,12 @@ import './index.css';
 //global variables
 const font = 'fonts/helvetiker_regular.typeface.json';
 let viewer = new DXFViewer();
+viewer.subscribe( 'log', ( message ) => console.log( message ) );
+viewer.subscribe( 'error', ( message ) => console.error( message ) );
+
 viewer.DefaultTextHeight = 12;
 viewer.DefaultTextScale = 1;
+
 let snaps, gui;
 
 //init html

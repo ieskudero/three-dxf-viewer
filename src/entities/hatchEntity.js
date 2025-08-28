@@ -96,7 +96,6 @@ export class HatchEntity extends BaseEntity {
 	*/
 	drawHatch( entity, getRefEntity3ds ) {
         
-
 		let geometry = null;
 		let material = null;
 
@@ -336,7 +335,7 @@ export class HatchEntity extends BaseEntity {
 		const entities = this._orderEntityPoints( loop.entities );
 
 		if( !entities ) {
-			console.warn( 'loops with separated entities not supproted yet' );
+			this.trigger( 'log', 'loops with separated entities not supported yet' );
 			return points;
 		}
 

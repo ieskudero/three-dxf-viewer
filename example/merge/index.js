@@ -13,8 +13,12 @@ let snaps;
 let html = new Boilerplate();
 html.onLoad = async ( file ) => {
 	html.three.clear();
+	
+	const viewer = new DXFViewer();
+	viewer.subscribe( 'log', ( message ) => console.log( message ) );
+	viewer.subscribe( 'error', ( message ) => console.error( message ) );
 
-	let dxf = await new DXFViewer().getFromFile( file, font );
+	let dxf = await viewer.getFromFile( file, font );
 	if( dxf ) {
 
 		//Optional. Add control snap. Do it before merge

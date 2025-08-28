@@ -11,7 +11,11 @@ let html = new Boilerplate();
 html.onLoad = async ( file ) => {
 	html.three.clear();
 
-	let dxf = await new DXFViewer().getFromFile( file, font );
+	const viewer = new DXFViewer();
+	viewer.subscribe( 'log', ( message ) => console.log( message ) );
+	viewer.subscribe( 'error', ( message ) => console.error( message ) );
+
+	let dxf = await viewer.getFromFile( file, font );
 	if( dxf ) {
 
 		if( snaps ) snaps.clear();

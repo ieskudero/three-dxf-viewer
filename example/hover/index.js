@@ -7,6 +7,8 @@ import './index.css';
 //global variables
 const font = 'fonts/helvetiker_regular.typeface.json';
 const viewer = new DXFViewer();
+viewer.subscribe( 'log', ( message ) => console.log( message ) );
+viewer.subscribe( 'error', ( message ) => console.error( message ) );
 
 //init html
 let html = new Boilerplate();

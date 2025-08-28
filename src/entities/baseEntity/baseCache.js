@@ -1,4 +1,5 @@
 import { Properties } from './properties.js';
+import { EventEmitter } from '../../tools/eventEmitter.js';
 
 var __cache = new Map();
 var __index = 1;
@@ -7,9 +8,10 @@ var __index = 1;
  * @class BaseCache
  * @classdesc Base class for all the entities. It stores the cache for the entities.
  */
-export class BaseCache {
+export class BaseCache extends EventEmitter {
 
 	constructor() {
+		super();
 		this.cache = true;
 	}
 

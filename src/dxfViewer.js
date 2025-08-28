@@ -14,16 +14,19 @@ import Helper from 'dxf/src/Helper';
 import { Properties } from './entities/baseEntity/properties';
 import { LayerHelper } from './entities/baseEntity/layerHelper.js';
 import { ColorHelper } from './entities/baseEntity/colorHelper.js';
+import { EventEmitter } from './tools/eventEmitter.js';
 
 /**
  * @class DXFViewer
  * @classdesc Main class to create the dxf viewer object. 
  * This object will parse the dxf using skymakerolof's [dxf library](https://github.com/skymakerolof/dxf) and create a three.js object. 
  * [DXF FORMAT DOCUMENTATION](https://documentation.help/AutoCAD-DXF/WS1a9193826455f5ff18cb41610ec0a2e719-79f8.htm)
+ * triggers 'error' and 'log' events
  */
-export class DXFViewer {
+export class DXFViewer extends EventEmitter{
     
 	constructor() {
+		super();
 
 		this._cache = new Map();
 		this.useCache = true;
@@ -106,13 +109,21 @@ export class DXFViewer {
 
 		//initialize
 		let lines = new LineEntity( data );
+		lines.subscribe( 'log', async message => await this._log( 'LineEntity', message ) );
 		let circles = new CircleEntity( data );
+		circles.subscribe( 'log', async message => await this._log( 'CircleEntity', message ) );
 		let splines = new SplineEntity( data );
+		splines.subscribe( 'log', async message => await this._log( 'SplineEntity', message ) );
 		let solids = new SolidEntity( data );
+		solids.subscribe( 'log', async message => await this._log( 'SolidEntity', message ) );
 		let dimensions = new DimensionEntity( data, this._font );
+		dimensions.subscribe( 'log', async message => await this._log( 'DimensionEntity', message ) );
 		let texts = new TextEntity( data, this._font );
+		texts.subscribe( 'log', async message => await this._log( 'TextEntity', message ) );		
 		let inserts = new InsertEntity( data, this._font );
+		inserts.subscribe( 'log', async message => await this._log( 'InsertEntity', message ) );
 		let hatchs = new HatchEntity( data, this._font );
+		hatchs.subscribe( 'log', async message => await this._log( 'HatchEntity', message ) );
 
 		//add callbacks
 		Properties.onBeforeTextDraw = this.onBeforeTextDraw;
@@ -189,7 +200,7 @@ export class DXFViewer {
 			} );
 		}
 		catch( e ) {
-			console.log( e );
+			await this.trigger( 'error', e );
 			this._font = null;
 		}
 	}
@@ -205,6 +216,10 @@ export class DXFViewer {
 				return;
 			}
 		}
+	}
+
+	async _log( sender, message ) {
+		await this.trigger( 'log', `${sender}: ${message}` );
 	}
 
 	get DefaultTextHeight() {
