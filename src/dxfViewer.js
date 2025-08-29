@@ -24,12 +24,12 @@ import { EventEmitter } from './tools/eventEmitter.js';
  * triggers 'error' and 'log' events
  */
 export class DXFViewer extends EventEmitter{
-    
+	
 	constructor() {
 		super();
 
 		this._cache = new Map();
-		this.useCache = true;
+		this.useCache = false;
 
 		this.colorHelper = new ColorHelper();
 		this.LayerHelper = new LayerHelper();

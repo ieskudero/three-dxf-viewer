@@ -76,10 +76,10 @@ viewer.DefaultTextScale = 1;
 ```
 
 #### Cache
-The viewer caches geometries by default. This can be changed to avoid it.
+The viewer doesn't cache geometries by default, but this can be changed to cache it and reuse geometry the second time a model is loaded
 ```js
-// Cache can be changed to false to avoid caching
-viewer.useCache = false;
+// Cache can be changed to true to enable caching
+viewer.useCache = true;
 ```
 
 ## Controls
