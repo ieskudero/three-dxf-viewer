@@ -28,6 +28,11 @@ html.onLoad = async ( file ) => {
 	let dxf = await viewer.getFromFile( file, font );
 	if( dxf ) {
 		
+		//make static. Better for performance
+		dxf.traverse( c=>{ c.updateMatrixWorld ( true ); c.matrixAutoUpdate = false; c.matrixWorldAutoUpdate=false; } );
+		dxf.updateWorldMatrix( true, true );
+		html.three.scene.matrixWorldAutoUpdate = false;
+
 		//Optional. Add control snap.
 		await html.updateMessage( 'Adding control snap...' ); 
 		if( snaps ) snaps.clear();
