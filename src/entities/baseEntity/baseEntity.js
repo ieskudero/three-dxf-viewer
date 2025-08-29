@@ -29,7 +29,6 @@ export class BaseEntity extends BaseCache {
         
 		if( typeof entity.paperSpace !== 'undefined' && Properties.showFrozen !== entity.paperSpace ) return true;
 
-		if( entity.lineTypeName === 'HIDDEN' ) return true;
 		let layer = Object.prototype.hasOwnProperty.call( this.data.tables.layers, entity.layer ) ? this.data.tables.layers[ entity.layer ] : null;
 		if( layer ) {
 			
