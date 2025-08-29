@@ -75,14 +75,12 @@ export class DXFViewer extends EventEmitter{
 		let parser = new Helper( file ); 
 		let data = parser.parse();
 
-		//cache
-		this._lastPath = path;
-		this._toCache( this._lastPath, data );
+		//save it
+		this.lastDXF = data;
 
 		//clear memory
 		parser._parsed = null;
 		parser = null;
-		data = null;
 		rawdata = null;
 		file = null;
 		
@@ -234,9 +232,5 @@ export class DXFViewer extends EventEmitter{
 	}
 	set DefaultTextScale( value ) {
 		TextEntity.TextScale = value;
-	}
-
-	get lastDXF() {
-		return this._fromCache( this._lastPath );
 	}
 }
