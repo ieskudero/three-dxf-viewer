@@ -14,6 +14,7 @@ html.onLoad = async ( file ) => {
 	const viewer = new DXFViewer();
 	viewer.subscribe( 'log', ( message ) => console.log( message ) );
 	viewer.subscribe( 'error', ( message ) => console.error( message ) );
+	viewer.subscribe( 'progress', async message => await html.updateMessage( message ) );
 
 	let dxf = await viewer.getFromFile( file, font );
 	if( dxf ) {

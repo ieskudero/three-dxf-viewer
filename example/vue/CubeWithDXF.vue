@@ -42,8 +42,12 @@ const handleFileChange = async (event) => {
     lastFile = file;
 
     if (dxf) scene.remove(dxf);
+	const viewer = new DXFViewer();
+	viewer.subscribe( 'log', ( message ) => console.log( message ) );
+	viewer.subscribe( 'error', ( message ) => console.error( message ) );
+	//viewer.subscribe( 'progress', async message => await html.updateMessage( message ) );
 
-    dxf = await new DXFViewer().getFromFile(file, "/fonts/helvetiker_regular.typeface.json");
+    dxf = await viewer.getFromFile(file, "/fonts/helvetiker_regular.typeface.json");
     scene.add(dxf);
     dxfData.value = dxf;
 

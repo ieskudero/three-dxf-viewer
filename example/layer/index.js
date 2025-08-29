@@ -7,10 +7,12 @@ import { CADControls } from '../../src/utils/cadControls.js';
 import './index.css';
 
 //global variables
+let html = new Boilerplate();
 const font = 'fonts/helvetiker_regular.typeface.json';
 let viewer = new DXFViewer();
 viewer.subscribe( 'log', ( message ) => console.log( message ) );
 viewer.subscribe( 'error', ( message ) => console.error( message ) );
+viewer.subscribe( 'progress', async message => await html.updateMessage( message ) );
 
 viewer.DefaultTextHeight = 12;
 viewer.DefaultTextScale = 1;
@@ -18,7 +20,6 @@ viewer.DefaultTextScale = 1;
 let snaps, gui;
 
 //init html
-let html = new Boilerplate();
 html.onLoad = async ( file ) => {
 	if( gui ) gui.destroy();
 	gui = new GUI( { width: 310 } );
@@ -28,6 +29,7 @@ html.onLoad = async ( file ) => {
 	if( dxf ) {
 		
 		//Optional. Add control snap.
+		await html.updateMessage( 'Adding control snap...' ); 
 		if( snaps ) snaps.clear();
 		snaps = new SnapsHelper( dxf, html.three.renderer, html.three.scene, html.three.camera, html.three.controls );
 		snaps.subscribe( 'nearSnap', ( snap ) => {			
@@ -35,6 +37,7 @@ html.onLoad = async ( file ) => {
 		} );
 
 		//Optional. Add CAD Controls
+		await html.updateMessage( 'Adding CAD controls ...' );
 		const controls = new CADControls( html.three.renderer.domElement, html.three.camera, dxf, viewer.lastDXF );
 		controls.subscribe( 'hover', ( hovered ) => console.log( 'Hovered entity', hovered.userData.entity ) );
 		controls.subscribe( 'select', ( selects ) => console.log( 'Selected entities', selects ) );
@@ -46,6 +49,7 @@ html.onLoad = async ( file ) => {
 		layer_names.forEach( name => viewer.layers[name].entities = [] );
 
 		//add entities to layers
+		await html.updateMessage( 'Adding layers ...' );
 		dxf.traverse( m => {
 			if( !m.userData || !m.userData.entity ) return; 
 

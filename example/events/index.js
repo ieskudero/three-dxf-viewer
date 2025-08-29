@@ -11,13 +11,16 @@ let html = new Boilerplate();
 html.onLoad = async ( file ) => {
 	html.three.clear();
 
-	const dxfViewer = new DXFViewer(); 
+	const viewer = new DXFViewer(); 
+	viewer.subscribe( 'log', ( message ) => console.log( message ) );
+	viewer.subscribe( 'error', ( message ) => console.error( message ) );
+	viewer.subscribe( 'progress', async message => await html.updateMessage( message ) );
 
-	dxfViewer.onBeforeTextDraw = ( text ) => { 
+	viewer.onBeforeTextDraw = ( text ) => { 
 		return text.text = 'text overrided!';
 	};
 
-	let dxf = await dxfViewer.getFromFile( file, font );
+	let dxf = await viewer.getFromFile( file, font );
 	
 	if( dxf ) {
 		//add dxf

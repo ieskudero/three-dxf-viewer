@@ -60,21 +60,25 @@ export class DXFViewer extends EventEmitter{
 		if( !this._font ) return null;
 
 		let cached = this._fromCache( path );
-            
+			
 		//from cache
 		if( cached ) {
 			return this._drawDXF( cached.data ? cached.data : cached );
 		}
-            
+			
 		//load file
+		await this.trigger( 'progress', 'Fetching file ...' );
 		let rawdata = await fetch( path );
 		if( rawdata.status !== 200 ) return null;            
 		let file = await rawdata.text();
 
 		//parse data
+		await this.trigger( 'progress', 'Parsing file ...' );
 		let parser = new Helper( file ); 
 		let data = parser.parse();
 
+		await this.trigger( 'progress', 'Drawing file ...' );
+		
 		//save it
 		this.lastDXF = data;
 

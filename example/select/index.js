@@ -5,13 +5,14 @@ import { Select } from '../../src/utils/select.js';
 import './index.css';
 
 //global variables
+let html = new Boilerplate();
 const font = 'fonts/helvetiker_regular.typeface.json';
 const viewer = new DXFViewer();
 viewer.subscribe( 'log', ( message ) => console.log( message ) );
 viewer.subscribe( 'error', ( message ) => console.error( message ) );
+viewer.subscribe( 'progress', async message => await html.updateMessage( message ) );
 
 //init html
-let html = new Boilerplate();
 html.onLoad = async ( file ) => {
 	html.three.clear();
 

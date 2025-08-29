@@ -46,8 +46,22 @@ export class Boilerplate {
 	
 		this.loading.style.display = 'block';
 		
+		const html = document.getElementById( 'loading' );
+		if( html ) html.innerText = 'Loading...';
+		
 		if( this.onLoad ) await this.onLoad( file );	
 		
 		this.loading.style.display = 'none';
+	}
+
+	async updateMessage( message ) {
+		const html = document.getElementById( 'loading' );
+		if( html ) html.innerText = message;
+		await this._sleep( 10 );
+	}
+
+	// wait for UI to refresh before blocking the main thread with dxf drawing
+	async _sleep( ms ) {
+		return new Promise( resolve => setTimeout( resolve, ms ) );
 	}
 }
