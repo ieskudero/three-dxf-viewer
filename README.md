@@ -1,6 +1,6 @@
 # DXF Viewer
 
-DXF viewer made using [dxf parser](https://github.com/skymakerolof/dxf) and [threejs](https://github.com/mrdoob/three.js/). It generates a threejs object that can be used in any scene. It also has some utility classes:
+DXF viewer made using [dxf parser](https://github.com/skymakerolof/dxf), [threejs](https://github.com/mrdoob/three.js/) and [rtf.js](https://github.com/tbluemel/rtf.js). It generates a threejs object that can be used in any scene. It also has some utility classes:
 * Select
 * Hover
 * Snap

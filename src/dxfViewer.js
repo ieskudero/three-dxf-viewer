@@ -9,6 +9,7 @@ import { CircleEntity } from './entities/circleEntity';
 import { SplineEntity } from './entities/splineEntity';
 import { SolidEntity } from './entities/solidEntity';
 import { HatchEntity } from './entities/hatchEntity';
+import { Ole2FrameEntity } from './entities/ole2frameEntity.js';
 
 import Helper from 'dxf/src/Helper';
 import { Properties } from './entities/baseEntity/properties';
@@ -122,6 +123,9 @@ export class DXFViewer extends EventEmitter{
 		dimensions.subscribe( 'log', async message => await this._log( 'DimensionEntity', message ) );
 		let texts = new TextEntity( data, this._font );
 		texts.subscribe( 'log', async message => await this._log( 'TextEntity', message ) );		
+		let ole2frames = new Ole2FrameEntity( data, this._font );
+		ole2frames.subscribe( 'log', async message => await this._log( 'Ole2FrameEntity', message ) );
+
 		let inserts = new InsertEntity( data, this._font );
 		inserts.subscribe( 'log', async message => await this._log( 'InsertEntity', message ) );
 		let hatchs = new HatchEntity( data, this._font );
@@ -135,9 +139,10 @@ export class DXFViewer extends EventEmitter{
 		circles = circles.draw( data );
 		splines = splines.draw( data );
 		solids = solids.draw( data );
-		dimensions = dimensions.draw( data );
+		dimensions = await dimensions.draw( data );
 		texts = texts.draw( data );
-		inserts = inserts.draw( data, data );
+		ole2frames = await ole2frames.draw( data );
+		inserts = await inserts.draw( data, data );
 		hatchs = hatchs.draw( data, refs => {
 			const refEntities = [];
 			const add = array => {
@@ -151,6 +156,7 @@ export class DXFViewer extends EventEmitter{
 			if( solids ) add( solids.children );
 			if( dimensions ) add( dimensions.children );
 			if( texts ) add( texts.children );
+			if( ole2frames ) add( ole2frames.children );
 			if( inserts ) add( inserts.children );
 			return refEntities;
 		} );
@@ -162,6 +168,7 @@ export class DXFViewer extends EventEmitter{
 		if( solids ) group.add( solids );
 		if( dimensions ) group.add( dimensions );
 		if( texts ) group.add( texts );
+		if( ole2frames ) group.add( ole2frames );
 		if( inserts ) group.add( inserts );
 		if( hatchs ) group.add( hatchs );
 

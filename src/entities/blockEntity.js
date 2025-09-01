@@ -7,6 +7,7 @@ import { SolidEntity } from './solidEntity';
 import { CircleEntity } from './circleEntity';
 import { SplineEntity } from './splineEntity';
 import { HatchEntity } from './hatchEntity';
+import { Ole2FrameEntity } from './ole2frameEntity';
 import { BlockMerger } from './baseEntity/blockMerger';
 
 /**
@@ -24,6 +25,7 @@ export class BlockEntity extends BaseEntity {
 		this._circleEntity = new CircleEntity( data );
 		this._splineEntity = new SplineEntity( data );
 		this._hatchEntity = new HatchEntity( data );
+		this._ole2FrameEntity = new Ole2FrameEntity( data );
 	}
 
 	/**
@@ -31,7 +33,7 @@ export class BlockEntity extends BaseEntity {
 	 * @param entity {Entity} DXF block entity.
      * @return {THREE.Group} ThreeJS object with all the generated geometry. DXF entity is added into userData
 	*/
-	drawBlock( entity, extrusionZ = 1 ) {
+	async drawBlock( entity, extrusionZ = 1 ) {
         
 		let group = new Group();
 		group.name = 'BLOCK';
@@ -50,7 +52,7 @@ export class BlockEntity extends BaseEntity {
 
 			if( this._hideEntity( _entity ) ) continue;
 
-			const obj3d = this._generateBlock3d( _entity, extrusionZ );
+			const obj3d = await this._generateBlock3d( _entity, extrusionZ );
 			if( obj3d ) group.add( obj3d );
 		}
 		
@@ -60,7 +62,7 @@ export class BlockEntity extends BaseEntity {
 
 			if( this._hideEntity( _entity ) ) continue;
 
-			const obj3d = this._generateBlock3d( _entity, extrusionZ, getRefEntity3ds );
+			const obj3d = await this._generateBlock3d( _entity, extrusionZ, getRefEntity3ds );
 			if( obj3d ) group.add( obj3d );
 		}
 
@@ -71,7 +73,7 @@ export class BlockEntity extends BaseEntity {
 		return group;
 	}
 
-	_generateBlock3d( entity, extrusionZ, getRefEntity3ds ) {
+	async _generateBlock3d( entity, extrusionZ, getRefEntity3ds ) {
 		switch ( entity.type ) {
 		case 'LINE': {
 			let _drawData = this._lineEntity.drawLine( entity, extrusionZ );
@@ -144,7 +146,7 @@ export class BlockEntity extends BaseEntity {
 			if( block && block.entities.length > 0 && !this._hideBlockEntity( block ) ) {
 				let obj3d = new Group();
 				obj3d.name = 'INSERT';
-				obj3d.add( this.drawBlock( block, extrusionZ ) );
+				obj3d.add( await this.drawBlock( block, extrusionZ ) );
 				obj3d.userData = { entity: entity };
 
 				let sx = entity.scaleX ? entity.scaleX : 1;
@@ -186,6 +188,14 @@ export class BlockEntity extends BaseEntity {
 		case 'DIMENSION': {
 			//we don't draw anything, all dimension related entities are drawn in each case
 		} break;
+		case 'OLE2FRAME': {
+			let _drawData = await this._ole2FrameEntity.drawOle2Frame( entity, extrusionZ );
+
+			let obj3d = new Mesh( _drawData.geometry, _drawData.material );
+			obj3d.userData = { entity: entity };
+
+			return obj3d;
+		}
 		default: {
 			this.trigger( 'log', 'unknown entity type: ' + entity.type );
 		} break;
