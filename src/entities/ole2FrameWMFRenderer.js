@@ -1,14 +1,7 @@
 import { CanvasTexture } from 'three';
 import { loadWMFJS } from './baseEntity/rtfjsWrapper.js';
 
-// GDI map mode constants (match your Helper.GDI.MapMode if you prefer importing)
-const MM_TEXT        = 1;
-const MM_LOMETRIC    = 2;
-const MM_HIMETRIC    = 3;
-const MM_LOENGLISH   = 4;
-const MM_HIENGLISH   = 5;
-const MM_TWIPS       = 6;
-const MM_ISOTROPIC   = 7;
+// GDI map mode constants
 const MM_ANISOTROPIC = 8;
 
 export class Ole2FrameWMFRenderer {
