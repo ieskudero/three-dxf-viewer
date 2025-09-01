@@ -1,5 +1,5 @@
 import { CanvasTexture } from 'three';
-import  { WMFJS } from 'rtf.js'; 
+import { loadWMFJS } from './baseEntity/rtfjsWrapper.js';
 
 // GDI map mode constants (match your Helper.GDI.MapMode if you prefer importing)
 const MM_TEXT        = 1;
@@ -12,15 +12,21 @@ const MM_ISOTROPIC   = 7;
 const MM_ANISOTROPIC = 8;
 
 export class Ole2FrameWMFRenderer {
-	constructor( entity ) {
-		this.entity = entity;
-		WMFJS.loggingEnabled( false );
+	constructor() {
+		this.lWMFJS();
+	}
+
+	async lWMFJS() {
+		if( !this.WMFJS ) {
+			this.WMFJS = await loadWMFJS();
+			this.WMFJS.loggingEnabled( false );
+		}
 	}
 
 	async render( wmfBytes,options = { dpi: 96, rasterScale: 2 } ) {
 		const dpi = options?.dpi ?? 96;
 		const scale = options?.rasterScale ?? 1; // e.g., 2 for hi-res rasterization
-		const svgEl = this.renderWmfToSvgElement( wmfBytes, dpi );
+		const svgEl = await this.renderWmfToSvgElement( wmfBytes, dpi );
 	
 		// For debug only: append to page
 		document.body.appendChild( svgEl );
@@ -90,8 +96,9 @@ export class Ole2FrameWMFRenderer {
 		} );
 	}
 	
-	renderWmfToSvgElement( wmfBytes, dpi = 96 ) {
-		const renderer = new WMFJS.Renderer( wmfBytes );
+	async renderWmfToSvgElement( wmfBytes, dpi = 96 ) {
+		await this.lWMFJS();
+		const renderer = new this.WMFJS.Renderer( wmfBytes );
 		const settings = this.getIRendererSettingsFromWMF( wmfBytes, { dpi: dpi } );
 		return renderer.render( settings ); // returns <svg>
 	}
