@@ -106,13 +106,18 @@ export class Ole2FrameEntity extends BaseEntity {
 		const imgData = this._Ole2FrameCFBHelpers.getImageData( bytes );
 
 		// render wmf image
-		if ( /emf|wmf/.test( imgData.type ) ) {
+		if ( /wmf/.test( imgData.type ) ) {
 			return await this._wmfRenderer.render( imgData.content );
+		}
+
+		if ( /emf/.test( imgData.type ) ) {
+			this.trigger( 'log', `Unsupported image type (mime=${imgData.type}).` );
+			return null;
 		}
 		
 		//if we couldn't get the image, return empty texture
 		if ( !imgData.type.startsWith( 'image/' ) ) {
-			this.trigger( `Unsupported payload (mime=${imgData.type}).` );
+			this.trigger( 'log', `Unsupported image type (mime=${imgData.type}).` );
 			return null;
 		}
 
