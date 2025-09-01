@@ -45,8 +45,6 @@ export class Ole2FrameCFBHelpers {
 	}
 
 	_findEmbeddedPreview( bytes ) {
-		// 1) PNG
-		const png = this._findPng( bytes ); if ( png ) return png;
 
 		// 2) JPEG
 		const jpg = this._findJpeg( bytes ); if ( jpg ) return jpg;
@@ -59,6 +57,9 @@ export class Ole2FrameCFBHelpers {
 
 		// 5) WMF (Aldus placeable header D7 CD C6 9A) -> use METAHEADER.fileSize (words) for end
 		const wmf = this._findWmf( bytes ); if ( wmf ) return wmf;
+		
+		// 1) PNG
+		const png = this._findPng( bytes ); if ( png ) return png;
 
 		// 6) EMF (EMR_HEADER: " EMF" at offset 40; nBytes total at offset 48)
 		const emf = this._findEmf( bytes ); if ( emf ) return emf;
