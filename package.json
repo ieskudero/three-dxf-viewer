@@ -48,7 +48,7 @@
         "@vitejs/plugin-vue": "5.2.1"
     },
     "dependencies": {
-        "dxf": "5.2.0",
+        "dxf": "5.3.0",
         "three": "0.171.0",
 		"rtf.js":"3.0.9"
     }
