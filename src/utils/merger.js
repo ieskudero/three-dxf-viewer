@@ -174,6 +174,9 @@ export class Merger {
         
 		let materials = orderedGroups.map( og => og.material );
 
+		//could be an array of arrays, so flatten it
+		materials = materials.flat();
+
 		//merge with no grouping        
 		let geometry = BufferGeometryUtils.mergeGeometries( 
 			orderedGroups.map( group => BufferGeometryUtils.mergeGeometries( group.geometries, false ) ), 
