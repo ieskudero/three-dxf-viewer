@@ -133,21 +133,45 @@ export class Merger {
 				userDataTemp = lineUserData;
 			}
 
+			let childMaterials = Array.isArray(child.material) ? child.material : [child.material];
+
+			let processedItems = [];
+
+			if ( childMaterials.length > 1 && geometry.groups && geometry.groups.length > 0 ) {
+				// split geometry
+				geometry.groups.forEach( group => {
+					const subGeometry = this._extractGroupGeometry( geometry, group );
+					subGeometry.applyMatrix4( child.matrixWorld );
+
+					const subMaterial = childMaterials[ group.materialIndex ];
+
+					processedItems.push({ geometry: subGeometry, material: subMaterial });
+				});
+			} else {
+				const singleMaterial = childMaterials[0];
+				processedItems.push({ geometry: geometry, material: singleMaterial });
+			}
+
 			//add user data			
 			userDataTemp.push( { uuid: child.uuid, userData: child.userData } );
-			
+
 			//add to group
-			let list = child.isMesh ? orderedMeshes : orderedLines;            
-			let group = this._findGroup( list, child.material );
-			if( !group ) {
-				group = { 
-					material: child.material, 
-					geometries: [] 
-				};
-				list.push( group );
-			}
-			group.geometries.push( geometry );
-			geometry.ent = child;
+			let list = child.isMesh ? orderedMeshes : orderedLines;
+
+			processedItems.forEach(item => {
+				let group = this._findGroup( list, item.material );
+
+				if( !group ) {
+					group = {
+						material: item.material,
+						geometries: []
+					};
+					list.push( group );
+				}
+
+				group.geometries.push( geometry );
+				geometry.ent = child;
+			})
 
 			//remove children know. Otherwise, storing the children in an array & removing later cost as much as the entire merge
 			if( child.parent ) child.parent.remove( child );
@@ -168,6 +192,24 @@ export class Merger {
 				userData: lineUserData
 			}
 		};        
+	}
+
+	_extractGroupGeometry( geometry, group ) {
+		const newGeom = new BufferGeometry();
+
+		for ( const name in geometry.attributes ) {
+			const attribute = geometry.attributes[ name ];
+			const itemSize = attribute.itemSize;
+			const array = attribute.array;
+
+			const start = group.start * itemSize;
+			const end = ( group.start + group.count ) * itemSize;
+
+			const newArray = array.slice( start, end );
+			newGeom.setAttribute( name, new BufferAttribute( newArray, itemSize ) );
+		}
+
+		return newGeom;
 	}
 
 	_mergeByMaterial( orderedGroups ) {
