@@ -133,7 +133,7 @@ export class Merger {
 				userDataTemp = lineUserData;
 			}
 
-			let childMaterials = Array.isArray(child.material) ? child.material : [child.material];
+			let childMaterials = Array.isArray( child.material ) ? child.material : [ child.material ];
 
 			let processedItems = [];
 
@@ -145,11 +145,11 @@ export class Merger {
 
 					const subMaterial = childMaterials[ group.materialIndex ];
 
-					processedItems.push({ geometry: subGeometry, material: subMaterial });
-				});
+					processedItems.push( { geometry: subGeometry, material: subMaterial } );
+				} );
 			} else {
 				const singleMaterial = childMaterials[0];
-				processedItems.push({ geometry: geometry, material: singleMaterial });
+				processedItems.push( { geometry: geometry, material: singleMaterial } );
 			}
 
 			//add user data			
@@ -158,7 +158,7 @@ export class Merger {
 			//add to group
 			let list = child.isMesh ? orderedMeshes : orderedLines;
 
-			processedItems.forEach(item => {
+			processedItems.forEach( item => {
 				let group = this._findGroup( list, item.material );
 
 				if( !group ) {
@@ -171,7 +171,7 @@ export class Merger {
 
 				group.geometries.push( geometry );
 				geometry.ent = child;
-			})
+			} );
 
 			//remove children know. Otherwise, storing the children in an array & removing later cost as much as the entire merge
 			if( child.parent ) child.parent.remove( child );
