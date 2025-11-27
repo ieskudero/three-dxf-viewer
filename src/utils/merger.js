@@ -1,5 +1,5 @@
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { Mesh, BufferAttribute, LineSegments } from 'three';
+import { Mesh, BufferAttribute, LineSegments, BufferGeometry } from 'three';
 
 /**
  * @class Merger
